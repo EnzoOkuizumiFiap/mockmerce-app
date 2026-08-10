@@ -1,6 +1,9 @@
+import { useCart } from '@/hooks/useCart';
 import { StyleSheet, Text, View } from 'react-native';
 
 export function CartScreen() {
+  const { data: cart, isLoading, isError, error, refetch } = useCart();
+
   return (
     <View style={styles.container}>
       <Text style={styles.emoji}>🛒</Text>

@@ -1,33 +1,18 @@
 import { useEffect, useState } from 'react';
-import { FlatList, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { FlatList, Image, Pressable, RefreshControl, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { listProducts } from '@/services/products';
 import { money } from '@/lib/format';
 import { Button, ErrorState, Loading } from '@/components/ui';
 import type { RootStackParamList } from '@/navigation';
 import type { ApiError, ProductSummary } from '@/types/api';
+import { useProducts } from '@/hooks/useProducts';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Products'>;
 
 export function ProductsScreen({ navigation }: Props) {
   const [search, setSearch] = useState('');
-  const [produtos, setProdutos] = useState<ProductSummary[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [erro, setErro] = useState<string | null>(null);
-  const [tentativa, setTentativa] = useState(0);
-
-  useEffect(() => {
-    let vivo = true;
-    setLoading(true);
-    setErro(null);
-    listProducts({ search })
-      .then((res) => vivo && setProdutos(res.data))
-      .catch((e: ApiError) => vivo && setErro(e.message))
-      .finally(() => vivo && setLoading(false));
-    return () => {
-      vivo = false;
-    };
-  }, [search, tentativa]);
+  const { data, isLoading, isError, error, refetch, isFetching } = useProducts({ search });
 
   return (
     <View style={styles.container}>
@@ -42,15 +27,16 @@ export function ProductsScreen({ navigation }: Props) {
         <Button label="Carrinho" variant="ghost" onPress={() => navigation.navigate('Cart')} />
       </View>
 
-      {loading ? (
+      {isLoading ? (
         <Loading label="Buscando produtos…" />
-      ) : erro ? (
-        <ErrorState message={erro} onRetry={() => setTentativa((n) => n + 1)} />
+      ) : isError ? (
+        <ErrorState message={(error as ApiError).message} onRetry={() => refetch()} />
       ) : (
         <FlatList
-          data={produtos}
+          data={data}
           keyExtractor={(p) => p.id}
           contentContainerStyle={styles.list}
+          refreshControl={<RefreshControl refreshing={isFetching && !isLoading} onRefresh={() => refetch()} />}
           ListEmptyComponent={<Text style={styles.empty}>Nenhum produto encontrado.</Text>}
           renderItem={({ item }) => (
             <Pressable
