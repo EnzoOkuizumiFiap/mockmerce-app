@@ -3,7 +3,7 @@
  * O Expo injeta qualquer variável EXPO_PUBLIC_* em process.env no bundle.
  */
 export const env = {
-  apiUrl: process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3333',
+  apiUrl: process.env.EXPO_PUBLIC_API_URL ?? 'https://api.mockmerce.com.br',
   apiKey: process.env.EXPO_PUBLIC_API_KEY ?? '',
   studentRm: process.env.EXPO_PUBLIC_STUDENT_RM ?? '',
 };

@@ -13,8 +13,9 @@ cp .env.example .env      # preencha URL, API Key e RM do SEU grupo
 npm start                 # leia o QR no Expo Go, ou aperte a / i
 ```
 
-> **URL da API:** emulador Android = `http://10.0.2.2:3333`; celular físico =
-> `http://SEU_IP:3333`; simulador iOS/web = `http://localhost:3333`. Detalhes no `.env.example`.
+> **URL da API:** o padrão já é o backend **na nuvem** (`https://api.mockmerce.com.br`) —
+> funciona em qualquer plataforma, sem configurar IP. Só precisa preencher API Key e RM do
+> seu grupo. (Localhost/`10.0.2.2` só se você mesmo rodar o backend — ver `.env.example`.)
 
 Abra o app: você deve conseguir **buscar produtos e abrir um produto**. É daqui que a gente parte.
 
