@@ -38,4 +38,18 @@ export const queryKeys = {
     // Chave do carrinho de compras do usuário: ['cart']
     all: ['cart'] as const,
   },
+
+  orders: {
+    // Chave base para todas as queries de pedidos: ['orders']
+    all: ['orders'] as const,
+
+    // Chave para o histórico de pedidos: ['orders', 'list']
+    list: () => ['orders', 'list'] as const,
+
+    // Chave para o detalhe de um pedido específico: ['orders', 'detail', 'order_123']
+    detail: (id: string) => ['orders', 'detail', id] as const,
+
+    // Chave para o timeline/histórico de status do pedido: ['orders', 'timeline', 'order_123']
+    timeline: (id: string) => ['orders', 'timeline', id] as const,
+  },
 };

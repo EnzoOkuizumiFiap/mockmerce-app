@@ -32,4 +32,7 @@ export type RootStackParamList = {
   Products: undefined;                       // Tela da Vitrine / Catálogo de Produtos
   ProductDetail: { id: string; name: string }; // Tela de Detalhes (exige ID e Nome do produto)
   Cart: undefined;                           // Tela do Carrinho de Compras
+  Checkout: undefined;                       // Tela de Checkout
+  Order: { id: string };                     // Tela de Pedido
+  Orders: undefined;                         // Tela de Pedidos
 };

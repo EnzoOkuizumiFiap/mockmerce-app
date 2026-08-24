@@ -1,12 +1,12 @@
 import { ReactNode } from 'react';
-import { 
-  ActivityIndicator, 
-  Pressable, 
-  StyleSheet, 
-  Text, 
-  TextInput, 
-  View, 
-  type TextInputProps 
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+  type TextInputProps
 } from 'react-native';
 
 /**
@@ -70,7 +70,7 @@ import {
  */
 export function TextField(props: TextInputProps) {
   return (
-    <TextInput 
+    <TextInput
       placeholderTextColor="#9ca3af" // Cor cinza suave para a dica/placeholder
       style={styles.input}           // Aplica nossa formatação visual pré-definida
       {...props}                     // Repassa value, onChangeText, etc.
@@ -78,9 +78,37 @@ export function TextField(props: TextInputProps) {
   );
 }
 
+
 /**
  * ============================================================================
- * 2. COMPONENTE: Center (Centralizador de Conteúdo)
+ * 2. COMPONENTE: Badge (Etiqueta de Status Colorida em Formato Pílula)
+ * ============================================================================
+ * 
+ * Componente visual compacto utilizado para destacar o status atual de entidades,
+ * como os estados do pedido (ex: "Aguardando pagamento", "Pago", "Cancelado").
+ * 
+ * @param label - Texto descritivo exibido dentro da etiqueta (ex: "Pago").
+ * @param color - Cor hexadecimal usada na borda e no texto (ex: "#15803d").
+ * 
+ * 💡 Destaques de Estilo:
+ * - `alignSelf: 'flex-start'`: Impede que a <View> estique ocupando a largura
+ *   inteira do container pai (comportamento padrão do flex no mobile).
+ * - `borderRadius: 999`: Truque clássico no React Native para arredondar 100%
+ *   as pontas laterais, criando o visual de "pílula" (pill badge).
+ * - `[styles.badge, { borderColor: color }]`: Combinação de estilo fixo com
+ *   estilo dinâmico via array de estilos.
+ */
+export function Badge({ label, color }: { label: string; color: string }) {
+  return (
+    <View style={[styles.badge, { borderColor: color }]}>
+      <Text style={[styles.badgeText, { color }]}>{label}</Text>
+    </View>
+  );
+}
+
+/**
+ * ============================================================================
+ * 3. COMPONENTE: Center (Centralizador de Conteúdo)
  * ============================================================================
  * 
  * É um componente "embrulho" (Wrapper). Qualquer coisa colocada dentro dele
@@ -96,7 +124,7 @@ export function Center({ children }: { children: ReactNode }) {
 
 /**
  * ============================================================================
- * 3. COMPONENTE: Loading (Tela de Carregamento)
+ * 4. COMPONENTE: Loading (Tela de Carregamento)
  * ============================================================================
  * 
  * Usado quando estamos esperando uma requisição (ex: buscando produtos da API).
@@ -118,7 +146,7 @@ export function Loading({ label = 'Carregando…' }: { label?: string }) {
 
 /**
  * ============================================================================
- * 4. COMPONENTE: ErrorState (Tela de Erro com Botão de Recarregar)
+ * 5. COMPONENTE: ErrorState (Tela de Erro com Botão de Recarregar)
  * ============================================================================
  * 
  * Usado quando uma requisição falha (ex: sem internet, servidor caiu).
@@ -145,7 +173,7 @@ export function ErrorState({ message, onRetry }: { message: string; onRetry?: ()
 
 /**
  * ============================================================================
- * 5. COMPONENTE: Button (Botão Clicável Customizado)
+ * 6. COMPONENTE: Button (Botão Clicável Customizado)
  * ============================================================================
  * 
  * - `label`: O texto que aparece escrito dentro do botão.
@@ -201,18 +229,18 @@ export function Button({
  *    por padrão (`flexDirection: 'column'`).
  */
 const styles = StyleSheet.create({
-  center: { 
+  center: {
     flex: 1,                  // Ocupa 100% da altura e largura da tela
     alignItems: 'center',     // Centraliza no sentido horizontal (esquerda <-> direita)
     justifyContent: 'center', // Centraliza no sentido vertical (topo <-> base)
     padding: 24,              // Espaço interno nas bordas para o conteúdo não colar na tela
     gap: 8,                   // Espaço de 8 unidades entre cada elemento filho
   },
-  muted: { 
+  muted: {
     color: '#6b7280',         // Cor cinza neutra
     textAlign: 'center'       // Alinhamento centralizado do texto
   },
-  errorTitle: { 
+  errorTitle: {
     fontSize: 16,             // Tamanho da fonte
     fontWeight: '700',        // Negrito (bold)
     color: '#b91c1c'          // Vermelho de alerta de erro
@@ -224,19 +252,19 @@ const styles = StyleSheet.create({
     borderRadius: 10,           // Cantos arredondados
     alignItems: 'center',       // Centraliza o texto no meio do botão
   },
-  btnGhost: { 
+  btnGhost: {
     backgroundColor: 'transparent', // Fundo transparente
     borderWidth: 1,                 // Linha de borda com espessura 1
     borderColor: '#d1d5db'          // Borda cinza clara
   },
-  btnDim: { 
+  btnDim: {
     opacity: 0.55 // Deixa o botão semitransparente (usado quando clicado ou desativado)
   },
-  btnText: { 
+  btnText: {
     color: '#fff',       // Texto branco
     fontWeight: '700'    // Negrito
   },
-  btnTextGhost: { 
+  btnTextGhost: {
     color: '#111827'     // Texto escuro para combinar com o botão transparente
   },
   input: {
@@ -248,4 +276,12 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#111827',
   },
+  badge: {
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+  },
+  badgeText: { fontSize: 12, fontWeight: '700' },
 });
