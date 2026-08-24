@@ -51,7 +51,7 @@ const METHODS: { key: PaymentMethod; label: string }[] = [
   { key: 'BOLETO', label: 'Boleto' },
 ];
 
-export function OrderScreen({ route }: Props) {
+export function OrderScreen({ route, navigation }: Props) {
   const { id } = route.params;
 
   // 1. Busca os detalhes do pedido e a linha do tempo em paralelo via TanStack Query
@@ -174,6 +174,15 @@ export function OrderScreen({ route }: Props) {
           ))}
         </View>
       )}
+
+      {/* Botão de navegação para o histórico completo de pedidos */}
+      <View style={styles.allOrders}>
+        <Button
+          label="Ver todos os meus pedidos"
+          variant="ghost"
+          onPress={() => navigation.navigate('Orders')}
+        />
+      </View>
     </ScrollView>
   );
 }
@@ -207,4 +216,5 @@ const styles = StyleSheet.create({
   tl: { flexDirection: 'row', gap: 8 },
   tlDot: { color: '#9ca3af' },
   tlText: { flex: 1, fontSize: 13, color: '#374151' },
+  allOrders: { marginTop: 16, marginBottom: 24 },
 });

@@ -1,22 +1,28 @@
-import { Alert, FlatList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, StyleSheet, Text, View } from 'react-native';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useCart } from '@/hooks/useCart';
 import { useCartMutations } from '@/hooks/useCartMutations';
 import { useSession } from '@/session/session';
 import { money } from '@/lib/format';
 import { Button, ErrorState, Loading } from '@/components/ui';
+import type { RootStackParamList } from '@/navigation';
 import type { ApiError } from '@/types/api';
+
+// Tipagem das propriedades de navegação da tela do Carrinho
+type Props = NativeStackScreenProps<RootStackParamList, 'Cart'>;
 
 /**
  * ============================================================================
  * TELA: CartScreen (Tela do Carrinho de Compras)
  * ============================================================================
  * 
- * Esta tela reúne os 3 pilares da aplicação:
+ * Esta tela reúne os pilares da aplicação:
  * 1. `useCart()`: Busca e sincroniza os dados do carrinho via TanStack Query.
  * 2. `useCartMutations()`: Dispara alterações otimistas de quantidade e remoção.
  * 3. `useSession()`: Exibe os dados do usuário autenticado e botão de logout.
+ * 4. Navegação para Checkout (`navigation.navigate('Checkout')`) e Pedidos (`Orders`).
  */
-export function CartScreen() {
+export function CartScreen({ navigation }: Props) {
   // 1. Busca os dados do carrinho e seus estados de carregamento/erro
   const { data: cart, isLoading, isError, error, refetch } = useCart();
 
@@ -49,9 +55,17 @@ export function CartScreen() {
         
         // Cabeçalho da Lista (rola junto com os itens)
         ListHeaderComponent={
-          <Text style={styles.hi}>
-            Olá, {customer?.name}. {items.length ? '' : 'Seu carrinho está vazio.'}
-          </Text>
+          <View style={styles.header}>
+            <Text style={styles.hi}>
+              Olá, {customer?.name}. {items.length ? '' : 'Seu carrinho está vazio.'}
+            </Text>
+            {/* Botão de atalho para a tela de histórico de pedidos do cliente */}
+            <Button
+              label="Meus Pedidos"
+              variant="ghost"
+              onPress={() => navigation.navigate('Orders')}
+            />
+          </View>
         }
 
         // Desenha cada item individual do carrinho
@@ -93,14 +107,14 @@ export function CartScreen() {
           </View>
         )}
 
-        // Rodapé da Lista (Exibe Total e Botão de Finalizar se houver itens)
+        // Rodapé da Lista (Exibe Total e Botão de Navegar para o Checkout)
         ListFooterComponent={
           items.length ? (
             <View style={styles.footer}>
               <Text style={styles.total}>Total: {money(cart?.total ?? 0)}</Text>
               <Button
                 label="Finalizar (checkout)"
-                onPress={() => Alert.alert('Checkout', 'Fluxo de pedido: próxima aula.')}
+                onPress={() => navigation.navigate('Checkout')}
               />
             </View>
           ) : null
@@ -109,7 +123,7 @@ export function CartScreen() {
 
       {/* Botão fixo no rodapé para deslogar da conta */}
       <View style={styles.signout}>
-        <Button label="Sair" variant="ghost" onPress={signOut} />
+        <Button label="Sair da conta" variant="ghost" onPress={signOut} />
       </View>
     </View>
   );
@@ -118,7 +132,8 @@ export function CartScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   list: { padding: 12, gap: 10 },
-  hi: { fontSize: 14, color: '#374151', marginBottom: 6 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  hi: { flex: 1, fontSize: 14, color: '#374151', marginRight: 8 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#f9fafb', borderRadius: 12, padding: 10 },
   info: { flex: 1, gap: 2 },
   name: { fontSize: 14, fontWeight: '600', color: '#111827' },
