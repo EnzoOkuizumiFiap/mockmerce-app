@@ -34,7 +34,8 @@ import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useOrder, useOrderTimeline } from '@/hooks/useOrders';
-import { useCancelOrder, usePayOrder } from '@/hooks/useOrderActions';
+import { useCancelOrder, usePayOrder, useRefundOrder } from '@/hooks/useOrderActions';
+import { Alert } from 'react-native';
 import { statusColor, statusLabel } from '@/lib/orders';
 import { money } from '@/lib/format';
 import { Badge, Button, ErrorState, Loading } from '@/components/ui';
@@ -61,6 +62,7 @@ export function OrderScreen({ route, navigation }: Props) {
   // 2. Mutações para acionar transições na máquina de estados
   const pay = usePayOrder();
   const cancel = useCancelOrder();
+  const refund = useRefundOrder();
 
   // 3. Estados locais para controlar o formulário de simulação de pagamento
   const [method, setMethod] = useState<PaymentMethod>('PIX');
@@ -183,6 +185,27 @@ export function OrderScreen({ route, navigation }: Props) {
           onPress={() => navigation.navigate('Orders')}
         />
       </View>
+
+      {/* Reembolso do pedido */}
+
+          {paid && (
+          <View style={styles.pay}>
+            {refund.isError && <Text style={styles.erro}>{(refund.error as ApiError).message}</Text>}
+            <Button
+              label={refund.isPending ? 'Reembolsando…' : 'Reembolsar pedido'}
+              variant="ghost"
+              onPress={() =>
+                // Confirmação explícita: é uma ação de estorno de dinheiro real (simulado),
+                // sem volta — vale o mesmo cuidado que teríamos com qualquer PATCH/DELETE crítico.
+                Alert.alert('Reembolsar pedido', 'O estoque será revertido e o pagamento estornado. Confirmar?', [
+                  { text: 'Cancelar', style: 'cancel' },
+                  { text: 'Reembolsar', style: 'destructive', onPress: () => refund.mutate(order.id) },
+                ])
+              }
+              disabled={refund.isPending}
+            />
+          </View>
+        )}
     </ScrollView>
   );
 }
