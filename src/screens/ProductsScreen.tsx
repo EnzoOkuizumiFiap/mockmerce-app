@@ -34,7 +34,7 @@ export function ProductsScreen({ navigation }: Props) {
 
   return (
     <View style={styles.container}>
-      {/* Barra de Pesquisa e Botão de Acesso Rápido ao Carrinho */}
+      {/* Barra de Pesquisa e Botões de Acesso Rápido a Pedidos e Carrinho */}
       <View style={styles.header}>
         <TextInput
           style={styles.search}
@@ -43,6 +43,7 @@ export function ProductsScreen({ navigation }: Props) {
           onChangeText={setSearch} // A cada letra digitada, o React Query dispara nova busca
           autoCorrect={false}      // Desativa o corretor automático do teclado
         />
+        <Button label="Pedidos" variant="ghost" onPress={() => navigation.navigate('Orders')} />
         <Button label="Carrinho" variant="ghost" onPress={() => navigation.navigate('Cart')} />
       </View>
 
