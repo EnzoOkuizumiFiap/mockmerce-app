@@ -105,3 +105,16 @@ export async function getOrderTimeline(id: string): Promise<TimelineEntry[]> {
   const { data } = await http.get<TimelineEntry[]>(`/orders/${id}/timeline`);
   return data;
 }
+
+/**
+ * POST /store/orders/:id/refund
+ *
+ * Reverte o estoque reservado/vendido e marca, o pedido como REFUNDED
+ * É a ação do vendedor desfazendo uma venda já paga.
+ *
+ * @param id - ID do pedido pago a ser reembolsado.
+ */
+export async function refundOrder(id: string): Promise<Order> {
+  const { data } = await http.post<Order>(`/store/orders/${id}/refund`);
+  return data;
+}

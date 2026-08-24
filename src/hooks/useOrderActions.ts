@@ -13,7 +13,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { cancelOrder, checkout, payOrder } from '@/services/orders';
+import { cancelOrder, checkout, payOrder, refundOrder } from '@/services/orders';
 import { queryKeys } from '@/lib/queryKeys';
 import type { Order, PaymentMethod } from '@/types/api';
 
@@ -81,6 +81,26 @@ export function useCancelOrder() {
       // Notifica a lista de histórico sobre a mudança de status
       queryClient.invalidateQueries({ queryKey: queryKeys.orders.list() });
       // Atualiza a timeline com o carimbo de cancelamento
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.timeline(order.id) });
+    },
+  });
+}
+
+/**
+ * Mutation para reembolsar um pedido PAGO (POST /store/orders/:id/refund).
+ *
+ * Efeito no Cache: igual ao cancelamento — atualiza o detalhe direto com a
+ * resposta do servidor e invalida lista + timeline, para o histórico e o
+ * "diário de bordo" do pedido mostrarem o novo status REFUNDED.
+ */
+export function useRefundOrder() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => refundOrder(id),
+    onSuccess: (order: Order) => {
+      queryClient.setQueryData(queryKeys.orders.detail(order.id), order);
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.list() });
       queryClient.invalidateQueries({ queryKey: queryKeys.orders.timeline(order.id) });
     },
   });
