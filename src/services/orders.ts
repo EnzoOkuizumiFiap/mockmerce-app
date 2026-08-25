@@ -16,7 +16,7 @@
  * injetando automaticamente o header `Authorization: Bearer <token>` em cada requisição.
  */
 
-import { http } from './http';
+import { http, storeHttp } from './http';
 import type { Order, PaymentMethod, TimelineEntry } from '@/types/api';
 
 /**
@@ -115,6 +115,6 @@ export async function getOrderTimeline(id: string): Promise<TimelineEntry[]> {
  * @param id - ID do pedido pago a ser reembolsado.
  */
 export async function refundOrder(id: string): Promise<Order> {
-  const { data } = await http.post<Order>(`/store/orders/${id}/refund`);
+  const { data } = await storeHttp.post<Order>(`/store/orders/${id}/refund`);
   return data;
 }

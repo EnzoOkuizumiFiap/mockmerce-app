@@ -103,3 +103,36 @@ http.interceptors.response.use(
     );
   },
 );
+
+/**
+ * Instância "loja" do Axios — usada apenas nas rotas /store/**.
+ */
+export const storeHttp = axios.create({
+  baseURL: `${env.apiUrl}/v1`,
+  timeout: 15000,
+  headers: {
+    'Content-Type': 'application/json',
+    'X-API-Key': env.apiKey,
+    'X-Student-RM': env.studentRm,
+    // Sem Authorization de propósito — ver comentário acima.
+  },
+});
+
+// Reaproveita o mesmo tratamento de erro da instância principal
+storeHttp.interceptors.response.use(
+  (response) => response,
+  (error: AxiosError<{ error?: { code?: string; message?: string } }>) => {
+    const status = error.response?.status ?? 0;
+    const payload = error.response?.data?.error;
+
+    if (payload) {
+      return Promise.reject(new ApiError(payload.code ?? 'ERROR', payload.message ?? 'Erro na API', status));
+    }
+    if (error.code === 'ECONNABORTED') {
+      return Promise.reject(new ApiError('TIMEOUT', 'A requisição demorou demais.', status));
+    }
+    return Promise.reject(
+      new ApiError('NETWORK_ERROR', 'Sem conexão com o servidor. Confira a URL da API.', status),
+    );
+  },
+);
