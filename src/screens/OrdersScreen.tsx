@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
   list: { padding: 12, gap: 10 },
   card: { backgroundColor: theme.colors.primaryLight, borderRadius: 12, padding: 12, gap: 6 },
   top: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  pedido: { fontSize: 15, fontWeight: '700', color: '#111827' },
+  pedido: { fontSize: 15, fontWeight: '700', color: theme.colors.dark },
   sub: { fontSize: 13, color: theme.colors.primaryDark },
   empty: { color: theme.colors.greyDark, textAlign: 'center', marginTop: 40 },
 });

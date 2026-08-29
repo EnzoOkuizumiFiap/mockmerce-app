@@ -6,6 +6,7 @@ import { forgotPassword, resetPassword } from '@/services/auth';
 import { Button, TextField } from '@/components/ui';
 import type { AuthStackParamList } from '@/navigation';
 import type { ApiError } from '@/types/api';
+import { theme } from '@/lib/theme';
 
 // Tipagem das propriedades de navegação recebidas pela tela
 type Props = NativeStackScreenProps<AuthStackParamList, 'ForgotPassword'>;
@@ -136,8 +137,8 @@ export function ForgotPasswordScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: '#fff' },
   container: { flex: 1, justifyContent: 'center', padding: 24, gap: 12 },
-  title: { fontSize: 24, fontWeight: '800', color: '#111827', textAlign: 'center' },
-  subtitle: { fontSize: 14, color: '#6b7280', textAlign: 'center', marginBottom: 4 },
-  aviso: { fontSize: 13, color: '#15803d', textAlign: 'center' }, // Verde para mensagem de sucesso
-  erro: { color: '#b91c1c', fontSize: 13, textAlign: 'center' },   // Vermelho para mensagem de erro
+  title: { fontSize: 24, fontWeight: '800', color: theme.colors.dark, textAlign: 'center' },
+  subtitle: { fontSize: 14, color: theme.colors.greyDark, textAlign: 'center', marginBottom: 4 },
+  aviso: { fontSize: 13, color: theme.colors.success, textAlign: 'center' }, // Verde para mensagem de sucesso
+  erro: { color: theme.colors.error, fontSize: 13, textAlign: 'center' },   // Vermelho para mensagem de erro
 });

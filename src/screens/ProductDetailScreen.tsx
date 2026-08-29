@@ -8,6 +8,7 @@ import { money } from '@/lib/format';
 import { Button, ErrorState, Loading } from '@/components/ui';
 import type { RootStackParamList } from '@/navigation';
 import type { ApiError, ProductVariant } from '@/types/api';
+import { theme } from '@/lib/theme';
 
 // Tipagem das props de navegação da tela de Detalhe do Produto
 type Props = NativeStackScreenProps<RootStackParamList, 'ProductDetail'>;
@@ -157,16 +158,16 @@ export function ProductDetailScreen({ route, navigation }: Props) {
 
 const styles = StyleSheet.create({
   container: { padding: 16, gap: 10 },
-  hero: { width: '100%', height: 260, borderRadius: 14, backgroundColor: '#e5e7eb' },
-  name: { fontSize: 20, fontWeight: '700', color: '#111827' },
-  price: { fontSize: 20, fontWeight: '800', color: '#111827' },
-  desc: { fontSize: 14, color: '#374151', lineHeight: 20 },
+  hero: { width: '100%', height: 260, borderRadius: 14, backgroundColor: theme.colors.light },
+  name: { fontSize: 20, fontWeight: '700', color: theme.colors.dark },
+  price: { fontSize: 20, fontWeight: '800', color: theme.colors.dark },
+  desc: { fontSize: 14, color: theme.colors.greyDark, lineHeight: 20 },
   variants: { gap: 6, marginTop: 4 },
-  label: { fontSize: 13, fontWeight: '600', color: '#6b7280' },
+  label: { fontSize: 13, fontWeight: '600', color: theme.colors.greyDark },
   variantRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: { borderWidth: 1, borderColor: '#d1d5db', borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8, overflow: 'hidden', color: '#111827' },
-  chipActive: { borderColor: '#111827', backgroundColor: '#111827', color: '#fff' },
+  chip: { borderWidth: 1, borderColor: theme.colors.greyLight, borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8, overflow: 'hidden', color: theme.colors.dark },
+  chipActive: { borderColor: theme.colors.dark, backgroundColor: theme.colors.dark, color: '#fff' },
   chipDisabled: { opacity: 0.4 },
-  stock: { fontSize: 13, color: '#6b7280' },
+  stock: { fontSize: 13, color: theme.colors.greyDark },
   loginHint: { fontSize: 13, color: '#b45309' },
 });

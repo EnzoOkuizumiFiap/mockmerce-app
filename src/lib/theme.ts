@@ -14,5 +14,6 @@ export const theme = {
     greyLight: '#d1d5db',
     greyDark: '#6b7280',
     error: '#b91c1c',
+    success: '#15803d'
   },
 };

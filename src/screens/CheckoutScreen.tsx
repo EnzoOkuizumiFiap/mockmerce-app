@@ -20,6 +20,7 @@ import { money } from '@/lib/format';
 import { Button, ErrorState, Loading } from '@/components/ui';
 import type { RootStackParamList } from '@/navigation';
 import type { ApiError } from '@/types/api';
+import { theme } from '@/lib/theme';
 
 // Tipagem estrita das propriedades de navegação recebidas pelo React Navigation
 type Props = NativeStackScreenProps<RootStackParamList, 'Checkout'>;
@@ -100,14 +101,14 @@ export function CheckoutScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   list: { padding: 16, gap: 8 },
-  h: { fontSize: 16, fontWeight: '700', color: '#111827', marginBottom: 6 },
+  h: { fontSize: 16, fontWeight: '700', color: theme.colors.dark, marginBottom: 6 },
   row: { flexDirection: 'row', justifyContent: 'space-between', gap: 10 },
-  name: { flex: 1, fontSize: 14, color: '#374151' },
-  sub: { fontSize: 14, fontWeight: '600', color: '#111827' },
-  empty: { color: '#6b7280', textAlign: 'center', marginTop: 24 },
+  name: { flex: 1, fontSize: 14, color: theme.colors.greyDark },
+  sub: { fontSize: 14, fontWeight: '600', color: theme.colors.dark },
+  empty: { color: theme.colors.greyDark, textAlign: 'center', marginTop: 24 },
   footer: { padding: 16, gap: 10, borderTopWidth: 1, borderTopColor: '#f3f4f6' },
   totalRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  totalLabel: { fontSize: 16, color: '#374151' },
-  total: { fontSize: 20, fontWeight: '800', color: '#111827' },
-  erro: { color: '#b91c1c', fontSize: 13 },
+  totalLabel: { fontSize: 16, color: theme.colors.greyDark },
+  total: { fontSize: 20, fontWeight: '800', color: theme.colors.dark },
+  erro: { color: theme.colors.error, fontSize: 13 },
 });

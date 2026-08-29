@@ -7,6 +7,7 @@ import { money } from '@/lib/format';
 import { Button, ErrorState, Loading } from '@/components/ui';
 import type { RootStackParamList } from '@/navigation';
 import type { ApiError } from '@/types/api';
+import { theme } from '@/lib/theme';
 
 // Tipagem das propriedades de navegação da tela do Carrinho
 type Props = NativeStackScreenProps<RootStackParamList, 'Cart'>;
@@ -139,16 +140,16 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   list: { padding: 12, gap: 10 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-  hi: { flex: 1, fontSize: 14, color: '#374151', marginRight: 8 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#f9fafb', borderRadius: 12, padding: 10 },
+  hi: { flex: 1, fontSize: 14, color: theme.colors.greyDark, marginRight: 8 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: theme.colors.light, borderRadius: 12, padding: 10 },
   info: { flex: 1, gap: 2 },
-  name: { fontSize: 14, fontWeight: '600', color: '#111827' },
-  sub: { fontSize: 12, color: '#6b7280' },
+  name: { fontSize: 14, fontWeight: '600', color: theme.colors.dark },
+  sub: { fontSize: 12, color: theme.colors.greyDark },
   qtyBox: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  qtyBtn: { fontSize: 20, fontWeight: '700', color: '#111827', paddingHorizontal: 6 },
+  qtyBtn: { fontSize: 20, fontWeight: '700', color: theme.colors.dark, paddingHorizontal: 6 },
   qty: { fontSize: 15, fontWeight: '700', minWidth: 20, textAlign: 'center' },
-  remove: { fontSize: 12, color: '#b91c1c', marginLeft: 6 },
+  remove: { fontSize: 12, color: theme.colors.error, marginLeft: 6 },
   footer: { marginTop: 16, gap: 10 },
-  total: { fontSize: 18, fontWeight: '800', color: '#111827', textAlign: 'right' },
+  total: { fontSize: 18, fontWeight: '800', color: theme.colors.dark, textAlign: 'right' },
   signout: { padding: 12 },
 });

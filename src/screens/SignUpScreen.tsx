@@ -5,6 +5,7 @@ import { useSession } from '@/session/session';
 import { Button, TextField } from '@/components/ui';
 import type { AuthStackParamList } from '@/navigation';
 import type { ApiError } from '@/types/api';
+import { theme } from '@/lib/theme';
 
 // Tipagem das propriedades de navegação da tela de Cadastro
 type Props = NativeStackScreenProps<AuthStackParamList, 'SignUp'>;
@@ -103,6 +104,6 @@ export function SignUpScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: '#fff' },
   container: { flex: 1, justifyContent: 'center', padding: 24, gap: 12 },
-  title: { fontSize: 26, fontWeight: '800', color: '#111827', textAlign: 'center', marginBottom: 8 },
-  erro: { color: '#b91c1c', fontSize: 13, textAlign: 'center' },
+  title: { fontSize: 26, fontWeight: '800', color: theme.colors.dark, textAlign: 'center', marginBottom: 8 },
+  erro: { color: theme.colors.error, fontSize: 13, textAlign: 'center' },
 });
