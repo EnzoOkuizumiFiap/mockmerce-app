@@ -41,6 +41,7 @@ import { money } from '@/lib/format';
 import { Badge, Button, ErrorState, Loading } from '@/components/ui';
 import type { RootStackParamList } from '@/navigation';
 import type { ApiError, PaymentMethod } from '@/types/api';
+import { theme } from '@/lib/theme';
 
 // Props recebidas via navegação: exige route.params.id
 type Props = NativeStackScreenProps<RootStackParamList, 'Order'>;
@@ -213,31 +214,31 @@ export function OrderScreen({ route, navigation }: Props) {
 const styles = StyleSheet.create({
   container: { padding: 16, gap: 8 },
   head: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
-  pedido: { fontSize: 18, fontWeight: '800', color: '#111827' },
+  pedido: { fontSize: 18, fontWeight: '800', color: theme.colors.primaryDark },
   row: { flexDirection: 'row', justifyContent: 'space-between', gap: 10 },
   name: { flex: 1, fontSize: 14, color: '#374151' },
-  sub: { fontSize: 14, fontWeight: '600', color: '#111827' },
+  sub: { fontSize: 14, fontWeight: '600', color: theme.colors.primaryDark },
   totalRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 8, paddingTop: 8, borderTopWidth: 1, borderTopColor: '#f3f4f6' },
-  totalLabel: { fontSize: 16, color: '#374151' },
-  total: { fontSize: 20, fontWeight: '800', color: '#111827' },
-  ok: { fontSize: 15, fontWeight: '700', color: '#15803d', marginTop: 8 },
+  totalLabel: { fontSize: 16, color: theme.colors.primaryDark },
+  total: { fontSize: 20, fontWeight: '800', color: theme.colors.primaryDark },
+  ok: { fontSize: 15, fontWeight: '700', color: theme.colors.secondaryLight, marginTop: 8 },
   pay: { marginTop: 12, gap: 10 },
-  section: { fontSize: 13, fontWeight: '700', color: '#6b7280', textTransform: 'uppercase' },
+  section: { fontSize: 13, fontWeight: '700', color: theme.colors.dark, textTransform: 'uppercase' },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: {
     borderWidth: 1,
-    borderColor: '#d1d5db',
+    borderColor: theme.colors.greyLight,
     borderRadius: 999,
     paddingHorizontal: 14,
     paddingVertical: 8,
     overflow: 'hidden',
-    color: '#111827',
+    color: theme.colors.dark,
   },
-  chipActive: { borderColor: '#111827', backgroundColor: '#111827', color: '#fff' },
-  erro: { color: '#b91c1c', fontSize: 13 },
+  chipActive: { borderColor: theme.colors.greyDark, backgroundColor: theme.colors.greyDark, color: '#fff' },
+  erro: { color: theme.colors.error, fontSize: 13 },
   timeline: { marginTop: 16, gap: 4 },
   tl: { flexDirection: 'row', gap: 8 },
-  tlDot: { color: '#9ca3af' },
-  tlText: { flex: 1, fontSize: 13, color: '#374151' },
+  tlDot: { color: theme.colors.greyDark },
+  tlText: { flex: 1, fontSize: 13, color: theme.colors.greyDark },
   allOrders: { marginTop: 16, marginBottom: 24 },
 });

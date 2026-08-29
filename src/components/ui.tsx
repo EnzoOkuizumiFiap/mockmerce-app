@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+import { theme } from '@/lib/theme';
 import {
   ActivityIndicator,
   Pressable,
@@ -138,7 +139,7 @@ export function Loading({ label = 'Carregando…' }: { label?: string }) {
   return (
     <Center>
       {/* size="large" deixa a rodinha em tamanho grande */}
-      <ActivityIndicator size="large" color="#111827" />
+      <ActivityIndicator size="large" color={theme.colors.dark} />
       <Text style={styles.muted}>{label}</Text>
     </Center>
   );
@@ -243,19 +244,25 @@ const styles = StyleSheet.create({
   errorTitle: {
     fontSize: 16,             // Tamanho da fonte
     fontWeight: '700',        // Negrito (bold)
-    color: '#b91c1c'          // Vermelho de alerta de erro
+    color: theme.colors.error          // Vermelho de alerta de erro
   },
   btn: {
-    backgroundColor: '#111827', // Preto/Cinza quase preto (estilo moderno)
+    backgroundColor: theme.colors.primary, // Azul
+    borderWidth: 1,                 // Linha de borda com espessura 1
+    borderBottomWidth: 4,             // Borda inferior mais grossa para efeito 3D
+    borderColor: theme.colors.primaryDark,          // Borda azul escuro
     paddingVertical: 12,        // Espaçamento interno em cima e embaixo
     paddingHorizontal: 16,      // Espaçamento interno nas laterais (esquerda e direita)
+    marginHorizontal: 2,        // Margem horizontal para separar de outros elementos
     borderRadius: 10,           // Cantos arredondados
     alignItems: 'center',       // Centraliza o texto no meio do botão
   },
   btnGhost: {
     backgroundColor: 'transparent', // Fundo transparente
     borderWidth: 1,                 // Linha de borda com espessura 1
-    borderColor: '#d1d5db'          // Borda cinza clara
+    borderBottomWidth: 4,             // Borda inferior mais grossa para efeito 3D
+    marginHorizontal: 2,        // Margem horizontal para separar de outros elementos
+    borderColor: theme.colors.primaryDark          // Borda azul escuro
   },
   btnDim: {
     opacity: 0.55 // Deixa o botão semitransparente (usado quando clicado ou desativado)
@@ -265,20 +272,23 @@ const styles = StyleSheet.create({
     fontWeight: '700'    // Negrito
   },
   btnTextGhost: {
-    color: '#111827'     // Texto escuro para combinar com o botão transparente
+    color: theme.colors.dark     // Texto escuro para combinar com o botão transparente
   },
   input: {
     borderWidth: 1,
-    borderColor: '#d1d5db',
+    borderBottomWidth: 4, // Borda inferior mais grossa para efeito 3D
+    borderColor: theme.colors.greyLight,
     borderRadius: 10,
+    marginHorizontal: 2,        // Margem horizontal para separar de outros elementos
     paddingHorizontal: 12,
     paddingVertical: 12,
     fontSize: 15,
-    color: '#111827',
+    color: theme.colors.dark,
   },
   badge: {
     alignSelf: 'flex-start',
     borderWidth: 1,
+    borderBottomWidth: 4,   // Borda inferior mais grossa para efeito 3D
     borderRadius: 999,
     paddingHorizontal: 10,
     paddingVertical: 3,

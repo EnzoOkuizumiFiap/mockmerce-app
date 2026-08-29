@@ -6,6 +6,7 @@ import { money } from '@/lib/format';
 import { Button, ErrorState, Loading } from '@/components/ui';
 import type { RootStackParamList } from '@/navigation';
 import type { ApiError } from '@/types/api';
+import { theme } from '@/lib/theme';
 
 // Tipagem das propriedades de navegação da tela de Listagem de Produtos
 type Props = NativeStackScreenProps<RootStackParamList, 'Products'>;
@@ -112,18 +113,19 @@ const styles = StyleSheet.create({
   search: {
     flex: 1,
     borderWidth: 1,
-    borderColor: '#d1d5db',
+    borderBottomWidth: 4,
+    borderColor: theme.colors.greyLight,
     borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 10,
   },
   list: { paddingHorizontal: 12, paddingBottom: 24, gap: 10 },
-  card: { flexDirection: 'row', gap: 12, backgroundColor: '#f9fafb', borderRadius: 12, padding: 10 },
-  thumb: { width: 72, height: 72, borderRadius: 8, backgroundColor: '#e5e7eb' },
+  card: { flexDirection: 'row', gap: 12, backgroundColor: theme.colors.secondaryLight, borderRadius: 12, padding: 10 },
+  thumb: { width: 72, height: 72, borderRadius: 8, backgroundColor: theme.colors.secondaryDark },
   thumbEmpty: { alignItems: 'center', justifyContent: 'center' },
   cardBody: { flex: 1, justifyContent: 'center', gap: 2 },
-  name: { fontSize: 15, fontWeight: '600', color: '#111827' },
-  brand: { fontSize: 12, color: '#6b7280' },
-  price: { fontSize: 15, fontWeight: '700', color: '#111827', marginTop: 2 },
-  empty: { textAlign: 'center', color: '#6b7280', marginTop: 40 },
+  name: { fontSize: 15, fontWeight: '600', color: theme.colors.dark },
+  brand: { fontSize: 12, color: theme.colors.light },
+  price: { fontSize: 15, fontWeight: '700', color: theme.colors.dark, marginTop: 2 },
+  empty: { textAlign: 'center', color: theme.colors.secondaryDark, marginTop: 40 },
 });

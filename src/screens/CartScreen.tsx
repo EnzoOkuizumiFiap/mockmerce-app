@@ -61,6 +61,12 @@ export function CartScreen({ navigation }: Props) {
             </Text>
             {/* Botão de atalho para a tela de histórico de pedidos do cliente */}
             <Button
+              label="Livros disponiveis"
+              variant="ghost"
+              onPress={() => navigation.navigate('Products')}
+            />
+            {/* Botão de atalho para a tela de histórico de pedidos do cliente */}
+            <Button
               label="Meus Pedidos"
               variant="ghost"
               onPress={() => navigation.navigate('Orders')}

@@ -18,6 +18,7 @@ import { money } from '@/lib/format';
 import { Badge, ErrorState, Loading } from '@/components/ui';
 import type { RootStackParamList } from '@/navigation';
 import type { ApiError } from '@/types/api';
+import { theme } from '@/lib/theme';
 
 // Props de navegação tipadas para a rota 'Orders'
 type Props = NativeStackScreenProps<RootStackParamList, 'Orders'>;
@@ -73,9 +74,9 @@ export function OrdersScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   list: { padding: 12, gap: 10 },
-  card: { backgroundColor: '#f9fafb', borderRadius: 12, padding: 12, gap: 6 },
+  card: { backgroundColor: theme.colors.primaryLight, borderRadius: 12, padding: 12, gap: 6 },
   top: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   pedido: { fontSize: 15, fontWeight: '700', color: '#111827' },
-  sub: { fontSize: 13, color: '#6b7280' },
-  empty: { color: '#6b7280', textAlign: 'center', marginTop: 40 },
+  sub: { fontSize: 13, color: theme.colors.primaryDark },
+  empty: { color: theme.colors.greyDark, textAlign: 'center', marginTop: 40 },
 });

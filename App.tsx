@@ -61,7 +61,7 @@ function AppFlow() {
   return (
     <AppStack.Navigator>
       {/* Vitrine do Catálogo */}
-      <AppStack.Screen name="Products" component={ProductsScreen} options={{ title: 'Loja da Turma' }} />
+      <AppStack.Screen name="Products" component={ProductsScreen} options={{ title: 'Livro Aberto' }} />
 
       {/* Detalhe do Produto: título dinâmico com o nome do produto passado via params */}
       <AppStack.Screen
