@@ -99,8 +99,12 @@ export function useRefundOrder() {
   return useMutation({
     mutationFn: (id: string) => refundOrder(id),
     onSuccess: (_, id) => {
-      queryClient.invalidateQueries({ queryKey: ['orders', id] });
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      // Invalida o detalhe exato do pedido para que o TanStack Query faça um novo GET e traga os dados completos
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(id) });
+      // Invalida a lista para atualizar a tela de histórico
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.list() });
+      // Invalida a timeline de auditoria
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.timeline(id) });
     },
   });
 }
