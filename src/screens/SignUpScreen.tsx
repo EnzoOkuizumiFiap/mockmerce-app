@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useSession } from '@/session/session';
-import { Button, TextField } from '@/components/ui';
+import { Button, Card, TextField } from '@/components/ui';
 import type { AuthStackParamList } from '@/navigation';
 import type { ApiError } from '@/types/api';
 import { theme } from '@/lib/theme';
@@ -56,54 +56,104 @@ export function SignUpScreen({ navigation }: Props) {
      */
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.flex}>
       <View style={styles.container}>
-        <Text style={styles.title}>Criar conta</Text>
+        {/* Brand Header */}
+        <View style={styles.brandHeader}>
+          <View style={styles.logoBox}>
+            <Text style={styles.logoEmoji}>📖</Text>
+          </View>
+          <Text style={styles.brandTitle}>{theme.storeName}</Text>
+          <Text style={styles.brandSubtitle}>Crie sua conta para começar</Text>
+        </View>
 
-        {/* Campo de Nome: autoCapitalize="words" deixa a 1ª letra de cada nome maiúscula */}
-        <TextField
-          placeholder="nome"
-          autoCapitalize="words"
-          value={name}
-          onChangeText={setName}
-        />
+        {/* Card de Cadastro */}
+        <Card style={styles.card}>
+          <Text style={styles.cardTitle}>Criar Conta</Text>
+          <Text style={styles.cardSubtitle}>Preencha seus dados para acessar o acervo</Text>
 
-        {/* Campo de E-mail */}
-        <TextField
-          placeholder="email"
-          autoCapitalize="none"        // Impede primeira letra maiúscula no e-mail
-          keyboardType="email-address" // Teclado mobile específico para e-mail
-          autoComplete="email"
-          value={email}
-          onChangeText={setEmail}
-        />
+          <View style={styles.form}>
+            {/* Campo de Nome: autoCapitalize="words" deixa a 1ª letra de cada nome maiúscula */}
+            <TextField
+              label="NOME COMPLETO"
+              placeholder="Seu nome"
+              autoCapitalize="words"
+              value={name}
+              onChangeText={setName}
+            />
 
-        {/* Campo de Senha */}
-        <TextField
-          placeholder="senha (mín. 6 caracteres)"
-          secureTextEntry              // Esconde a senha com caracteres protegidos
-          value={password}
-          onChangeText={setPassword}
-        />
+            {/* Campo de E-mail */}
+            <TextField
+              label="E-MAIL"
+              placeholder="seuemail@exemplo.com"
+              autoCapitalize="none"        // Impede primeira letra maiúscula no e-mail
+              keyboardType="email-address" // Teclado mobile específico para e-mail
+              autoComplete="email"
+              value={email}
+              onChangeText={setEmail}
+            />
 
-        {/* Exibe mensagem de erro se a API recusar o cadastro */}
-        {erro && <Text style={styles.erro}>{erro}</Text>}
+            {/* Campo de Senha */}
+            <TextField
+              label="SENHA"
+              placeholder="Mínimo 6 caracteres"
+              secureTextEntry              // Esconde a senha com caracteres protegidos
+              value={password}
+              onChangeText={setPassword}
+            />
 
-        {/* Botão de Cadastro: Desativado se faltar algum campo ou se a senha tiver menos de 6 dígitos */}
-        <Button
-          label={busy ? 'Criando…' : 'Cadastrar'}
-          onPress={handle}
-          disabled={busy || !name || !email || password.length < 6}
-        />
+            {/* Exibe mensagem de erro se a API recusar o cadastro */}
+            {erro && <Text style={styles.erro}>{erro}</Text>}
 
-        {/* Botão para voltar à tela de Login */}
-        <Button label="Já tenho conta" variant="ghost" onPress={() => navigation.navigate('SignIn')} />
+            {/* Botão de Cadastro: Desativado se faltar algum campo ou se a senha tiver menos de 6 dígitos */}
+            <Button
+              label={busy ? 'Criando…' : 'Cadastrar'}
+              onPress={handle}
+              disabled={busy || !name || !email || password.length < 6}
+              style={{ marginTop: 4 }}
+            />
+          </View>
+
+          {/* Link para voltar à tela de Login */}
+          <View style={styles.footerLinks}>
+            <Text style={styles.footerText}>
+              Já tem conta?{' '}
+              <Text style={styles.linkBold} onPress={() => navigation.navigate('SignIn')}>
+                Entrar
+              </Text>
+            </Text>
+          </View>
+        </Card>
       </View>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: '#fff' },
-  container: { flex: 1, justifyContent: 'center', padding: 24, gap: 12 },
-  title: { fontSize: 26, fontWeight: '800', color: theme.colors.dark, textAlign: 'center', marginBottom: 8 },
+  flex: { flex: 1, backgroundColor: theme.colors.light },
+  container: { flex: 1, justifyContent: 'center', padding: 20, gap: 20 },
+  brandHeader: { alignItems: 'center', gap: 6 },
+  logoBox: {
+    width: 68,
+    height: 68,
+    borderRadius: 20,
+    backgroundColor: theme.colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: theme.colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 5,
+    marginBottom: 4,
+  },
+  logoEmoji: { fontSize: 32 },
+  brandTitle: { fontSize: 24, fontWeight: '800', color: theme.colors.dark },
+  brandSubtitle: { fontSize: 13, color: theme.colors.greyDark },
+  card: { padding: 22, borderRadius: 24, backgroundColor: '#ffffff' },
+  cardTitle: { fontSize: 20, fontWeight: '800', color: theme.colors.dark },
+  cardSubtitle: { fontSize: 13, color: theme.colors.greyDark, marginTop: 2, marginBottom: 16 },
+  form: { gap: 14 },
   erro: { color: theme.colors.error, fontSize: 13, textAlign: 'center' },
+  footerLinks: { alignItems: 'center', marginTop: 18 },
+  footerText: { fontSize: 13, color: theme.colors.greyDark },
+  linkBold: { color: theme.colors.primary, fontWeight: '700' },
 });

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useSession } from '@/session/session';
-import { Button, TextField } from '@/components/ui';
+import { Button, Card, TextField } from '@/components/ui';
 import type { AuthStackParamList } from '@/navigation';
 import type { ApiError } from '@/types/api';
 import { theme } from '@/lib/theme';
@@ -57,50 +57,107 @@ export function SignInScreen({ navigation }: Props) {
      */
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.flex}>
       <View style={styles.container}>
-        {/* Cabeçalho */}
-        <Text style={styles.title}>Loja da Turma</Text>
-        <Text style={styles.subtitle}>Entre para continuar</Text>
+        {/* Brand Header */}
+        <View style={styles.brandHeader}>
+          <View style={styles.logoBox}>
+            <Text style={styles.logoEmoji}>📖</Text>
+          </View>
+          <Text style={styles.brandTitle}>{theme.storeName}</Text>
+          <Text style={styles.brandSubtitle}>{theme.tagline}</Text>
+        </View>
 
-        {/* Campo de E-mail com configurações ideais para mobile */}
-        <TextField
-          placeholder="email"
-          autoCapitalize="none"        // Impede a primeira letra de ficar maiúscula
-          keyboardType="email-address" // Teclado otimizado com @ e .
-          autoComplete="email"         // Sugestão de preenchimento automático do sistema
-          value={email}
-          onChangeText={setEmail}
-        />
+        {/* Card de Login */}
+        <Card style={styles.loginCard}>
+          <Text style={styles.cardTitle}>Entrar</Text>
+          <Text style={styles.cardSubtitle}>Acesse sua conta para continuar</Text>
 
-        {/* Campo de Senha protegido */}
-        <TextField
-          placeholder="senha"
-          secureTextEntry              // Oculta os caracteres digitados com bolinhas
-          value={password}
-          onChangeText={setPassword}
-        />
+          <View style={styles.form}>
+            {/* Campo de E-mail */}
+            <TextField
+              label="E-MAIL"
+              placeholder="seuemail@exemplo.com"
+              autoCapitalize="none"        // Impede a primeira letra de ficar maiúscula
+              keyboardType="email-address" // Teclado otimizado com @ e .
+              autoComplete="email"         // Sugestão de preenchimento automático do sistema
+              value={email}
+              onChangeText={setEmail}
+            />
 
-        {/* Mensagem de Erro em caso de falha de login */}
-        {erro && <Text style={styles.erro}>{erro}</Text>}
+            {/* Campo de Senha protegido */}
+            <TextField
+              label="SENHA"
+              placeholder="••••••••"
+              secureTextEntry              // Oculta os caracteres digitados com bolinhas
+              value={password}
+              onChangeText={setPassword}
+            />
 
-        {/* Botão Principal de Login */}
-        <Button
-          label={busy ? 'Entrando…' : 'Entrar'}
-          onPress={handle}
-          disabled={busy || !email || !password} // Desativa se estiver carregando ou se faltar campos
-        />
+            {/* Mensagem de Erro em caso de falha de login */}
+            {erro && <Text style={styles.erro}>{erro}</Text>}
 
-        {/* Links secundários de navegação */}
-        <Button label="Esqueci minha senha" variant="ghost" onPress={() => navigation.navigate('ForgotPassword')} />
-        <Button label="Criar uma conta" variant="ghost" onPress={() => navigation.navigate('SignUp')} />
+            {/* Botão Principal de Login */}
+            <Button
+              label={busy ? 'Entrando…' : 'Entrar'}
+              onPress={handle}
+              disabled={busy || !email || !password} // Desativa se estiver carregando ou se faltar campos
+              style={{ marginTop: 4 }}
+            />
+          </View>
+
+          {/* Links de Rodapé */}
+          <View style={styles.footerLinks}>
+            <Text style={styles.footerText}>
+              Não tem conta?{' '}
+              <Text style={styles.linkBold} onPress={() => navigation.navigate('SignUp')}>
+                Cadastre-se
+              </Text>
+            </Text>
+
+            <Text
+              style={styles.forgotLink}
+              onPress={() => navigation.navigate('ForgotPassword')}
+            >
+              Esqueci minha senha
+            </Text>
+          </View>
+        </Card>
       </View>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: '#fff' },
-  container: { flex: 1, justifyContent: 'center', padding: 24, gap: 12 },
-  title: { fontSize: 26, fontWeight: '800', color: theme.colors.primaryDark, textAlign: 'center' },
-  subtitle: { fontSize: 14, color: theme.colors.greyDark, textAlign: 'center', marginBottom: 8 },
+  flex: { flex: 1, backgroundColor: theme.colors.light },
+  container: { flex: 1, justifyContent: 'center', padding: 20, gap: 20 },
+  brandHeader: { alignItems: 'center', gap: 6 },
+  logoBox: {
+    width: 68,
+    height: 68,
+    borderRadius: 20,
+    backgroundColor: theme.colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: theme.colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 5,
+    marginBottom: 4,
+  },
+  logoEmoji: { fontSize: 32 },
+  brandTitle: { fontSize: 24, fontWeight: '800', color: theme.colors.dark },
+  brandSubtitle: { fontSize: 13, color: theme.colors.greyDark },
+  loginCard: {
+    padding: 22,
+    borderRadius: 24,
+    backgroundColor: '#ffffff',
+  },
+  cardTitle: { fontSize: 20, fontWeight: '800', color: theme.colors.dark },
+  cardSubtitle: { fontSize: 13, color: theme.colors.greyDark, marginTop: 2, marginBottom: 16 },
+  form: { gap: 14 },
   erro: { color: theme.colors.error, fontSize: 13, textAlign: 'center' },
+  footerLinks: { alignItems: 'center', marginTop: 18, gap: 8 },
+  footerText: { fontSize: 13, color: theme.colors.greyDark },
+  linkBold: { color: theme.colors.primary, fontWeight: '700' },
+  forgotLink: { fontSize: 12, color: theme.colors.greyDark, textDecorationLine: 'underline' },
 });

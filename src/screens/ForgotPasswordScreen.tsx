@@ -3,7 +3,7 @@ import { KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-na
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useSession } from '@/session/session';
 import { forgotPassword, resetPassword } from '@/services/auth';
-import { Button, TextField } from '@/components/ui';
+import { Button, Card, TextField } from '@/components/ui';
 import type { AuthStackParamList } from '@/navigation';
 import type { ApiError } from '@/types/api';
 import { theme } from '@/lib/theme';
@@ -78,67 +78,130 @@ export function ForgotPasswordScreen({ navigation }: Props) {
      */
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.flex}>
       <View style={styles.container}>
-        <Text style={styles.title}>Esqueci minha senha</Text>
+        {/* Brand Header */}
+        <View style={styles.brandHeader}>
+          <View style={styles.logoBox}>
+            <Text style={styles.logoEmoji}>🔑</Text>
+          </View>
+          <Text style={styles.brandTitle}>{theme.storeName}</Text>
+          <Text style={styles.brandSubtitle}>Recuperação de Acesso</Text>
+        </View>
 
-        {/* Renderização Condicional: FASE 1 vs FASE 2 */}
-        {fase === 'email' ? (
-          /* ================= FASE 1: PEDIR CÓDIGO ================= */
-          <>
-            <Text style={styles.subtitle}>Informe seu e-mail para receber um código.</Text>
-            <TextField
-              placeholder="email"
-              autoCapitalize="none"        // Impede que a primeira letra fique maiúscula
-              keyboardType="email-address" // Teclado otimizado para e-mail (com @ e .)
-              autoComplete="email"
-              value={email}
-              onChangeText={setEmail}
-            />
-            {erro && <Text style={styles.erro}>{erro}</Text>}
-            <Button
-              label={busy ? 'Enviando…' : 'Enviar código'}
-              onPress={pedirCodigo}
-              disabled={busy || !email}
-            />
-          </>
-        ) : (
-          /* ================= FASE 2: DIGITAR CÓDIGO E NOVA SENHA ================= */
-          <>
-            {aviso && <Text style={styles.aviso}>{aviso}</Text>}
-            <TextField
-              placeholder="código (6 dígitos)"
-              keyboardType="number-pad"    // Abre teclado apenas com números
-              value={code}
-              onChangeText={setCode}
-            />
-            <TextField
-              placeholder="nova senha (mín. 6 caracteres)"
-              secureTextEntry              // Esconde o texto com bolinhas de senha
-              value={novaSenha}
-              onChangeText={setNovaSenha}
-            />
-            {erro && <Text style={styles.erro}>{erro}</Text>}
-            <Button
-              label={busy ? 'Redefinindo…' : 'Redefinir senha'}
-              onPress={redefinir}
-              disabled={busy || !code || novaSenha.length < 6}
-            />
+        {/* Card de Recuperação */}
+        <Card style={styles.card}>
+          <Text style={styles.cardTitle}>Esqueci minha senha</Text>
 
-            <Button label="Reenviar código" variant="ghost" onPress={pedirCodigo} disabled={busy} />
-          </>
-        )}
+          {/* Renderização Condicional: FASE 1 vs FASE 2 */}
+          {fase === 'email' ? (
+            /* ================= FASE 1: PEDIR CÓDIGO ================= */
+            <View style={styles.form}>
+              <Text style={styles.cardSubtitle}>Informe seu e-mail cadastrado para receber o código de validação.</Text>
+              
+              <TextField
+                label="E-MAIL"
+                placeholder="seuemail@exemplo.com"
+                autoCapitalize="none"        // Impede que a primeira letra fique maiúscula
+                keyboardType="email-address" // Teclado otimizado para e-mail (com @ e .)
+                autoComplete="email"
+                value={email}
+                onChangeText={setEmail}
+              />
 
-        {/* Botão de navegação para voltar à tela de Login */}
-        <Button label="Voltar ao login" variant="ghost" onPress={() => navigation.navigate('SignIn')} />
+              {erro && <Text style={styles.erro}>{erro}</Text>}
+
+              <Button
+                label={busy ? 'Enviando…' : 'Enviar código'}
+                onPress={pedirCodigo}
+                disabled={busy || !email}
+                style={{ marginTop: 4 }}
+              />
+            </View>
+          ) : (
+            /* ================= FASE 2: DIGITAR CÓDIGO E NOVA SENHA ================= */
+            <View style={styles.form}>
+              {aviso && (
+                <View style={styles.avisoBox}>
+                  <Text style={styles.aviso}>{aviso}</Text>
+                </View>
+              )}
+
+              <TextField
+                label="CÓDIGO RECEBIDO"
+                placeholder="Código de 6 dígitos"
+                keyboardType="number-pad"    // Abre teclado apenas com números
+                value={code}
+                onChangeText={setCode}
+              />
+
+              <TextField
+                label="NOVA SENHA"
+                placeholder="Mínimo 6 caracteres"
+                secureTextEntry              // Esconde o texto com bolinhas de senha
+                value={novaSenha}
+                onChangeText={setNovaSenha}
+              />
+
+              {erro && <Text style={styles.erro}>{erro}</Text>}
+
+              <Button
+                label={busy ? 'Redefinindo…' : 'Redefinir senha'}
+                onPress={redefinir}
+                disabled={busy || !code || novaSenha.length < 6}
+                style={{ marginTop: 4 }}
+              />
+
+              <Button label="Reenviar código" variant="ghost" onPress={pedirCodigo} disabled={busy} />
+            </View>
+          )}
+
+          {/* Link de Retorno */}
+          <View style={styles.footerLinks}>
+            <Text style={styles.footerText}>
+              Lembrou a senha?{' '}
+              <Text style={styles.linkBold} onPress={() => navigation.navigate('SignIn')}>
+                Voltar ao login
+              </Text>
+            </Text>
+          </View>
+        </Card>
       </View>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: '#fff' },
-  container: { flex: 1, justifyContent: 'center', padding: 24, gap: 12 },
-  title: { fontSize: 24, fontWeight: '800', color: theme.colors.dark, textAlign: 'center' },
-  subtitle: { fontSize: 14, color: theme.colors.greyDark, textAlign: 'center', marginBottom: 4 },
-  aviso: { fontSize: 13, color: theme.colors.success, textAlign: 'center' }, // Verde para mensagem de sucesso
-  erro: { color: theme.colors.error, fontSize: 13, textAlign: 'center' },   // Vermelho para mensagem de erro
+  flex: { flex: 1, backgroundColor: theme.colors.light },
+  container: { flex: 1, justifyContent: 'center', padding: 20, gap: 20 },
+  brandHeader: { alignItems: 'center', gap: 6 },
+  logoBox: {
+    width: 68,
+    height: 68,
+    borderRadius: 20,
+    backgroundColor: theme.colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: theme.colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 5,
+    marginBottom: 4,
+  },
+  logoEmoji: { fontSize: 32 },
+  brandTitle: { fontSize: 24, fontWeight: '800', color: theme.colors.dark },
+  brandSubtitle: { fontSize: 13, color: theme.colors.greyDark },
+  card: { padding: 22, borderRadius: 24, backgroundColor: '#ffffff' },
+  cardTitle: { fontSize: 20, fontWeight: '800', color: theme.colors.dark },
+  cardSubtitle: { fontSize: 13, color: theme.colors.greyDark, marginTop: 2, marginBottom: 8 },
+  form: { gap: 14 },
+  avisoBox: {
+    backgroundColor: theme.colors.mintLight,
+    padding: 10,
+    borderRadius: theme.radius.md,
+  },
+  aviso: { fontSize: 13, color: theme.colors.mintDark, textAlign: 'center', fontWeight: '600' },
+  erro: { color: theme.colors.error, fontSize: 13, textAlign: 'center' },
+  footerLinks: { alignItems: 'center', marginTop: 18 },
+  footerText: { fontSize: 13, color: theme.colors.greyDark },
+  linkBold: { color: theme.colors.primary, fontWeight: '700' },
 });

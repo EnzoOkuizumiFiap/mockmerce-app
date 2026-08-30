@@ -17,7 +17,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useCart } from '@/hooks/useCart';
 import { useCheckout } from '@/hooks/useOrderActions';
 import { money } from '@/lib/format';
-import { Button, ErrorState, Loading } from '@/components/ui';
+import { Button, Card, ErrorState, Loading } from '@/components/ui';
 import type { RootStackParamList } from '@/navigation';
 import type { ApiError } from '@/types/api';
 import { theme } from '@/lib/theme';
@@ -62,23 +62,38 @@ export function CheckoutScreen({ navigation }: Props) {
         data={items}
         keyExtractor={(it) => it.variantId} // Chave única por variante
         contentContainerStyle={styles.list}
-        ListHeaderComponent={<Text style={styles.h}>Revise seu pedido</Text>}
+        ListHeaderComponent={
+          <View style={styles.header}>
+            <Text style={styles.h}>Revise seu pedido</Text>
+            <Text style={styles.subHeader}>Confira os itens antes de gerar a cobrança</Text>
+          </View>
+        }
         ListEmptyComponent={<Text style={styles.empty}>Seu carrinho está vazio.</Text>}
         renderItem={({ item }) => (
-          <View style={styles.row}>
-            <Text style={styles.name} numberOfLines={2}>
-              {item.quantity}× {item.name}
-            </Text>
+          <Card style={styles.itemCard}>
+            <View style={styles.thumbBox}>
+              <View style={styles.thumbSpine} />
+              <Text style={{ fontSize: 20 }}>📖</Text>
+            </View>
+            <View style={styles.itemInfo}>
+              <Text style={styles.name} numberOfLines={2}>
+                {item.quantity}× {item.name}
+              </Text>
+              <Text style={styles.unitInfo}>Unitário: {money(item.unitPrice)}</Text>
+            </View>
             {/* Formata o subtotal monetário para o padrão Real (R$ 0,00) */}
             <Text style={styles.sub}>{money(item.subtotal)}</Text>
-          </View>
+          </Card>
         )}
       />
 
       {/* Rodapé fixo com total e botão de confirmação */}
-      <View style={styles.footer}>
+      <View style={styles.stickyFooter}>
         <View style={styles.totalRow}>
-          <Text style={styles.totalLabel}>Total</Text>
+          <View>
+            <Text style={styles.totalLabel}>Total do Pedido</Text>
+            <Text style={styles.totalCount}>{items.length} {items.length === 1 ? 'item' : 'itens'}</Text>
+          </View>
           <Text style={styles.total}>{money(cart?.total ?? 0)}</Text>
         </View>
 
@@ -99,16 +114,56 @@ export function CheckoutScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
-  list: { padding: 16, gap: 8 },
-  h: { fontSize: 16, fontWeight: '700', color: theme.colors.dark, marginBottom: 6 },
-  row: { flexDirection: 'row', justifyContent: 'space-between', gap: 10 },
-  name: { flex: 1, fontSize: 14, color: theme.colors.greyDark },
-  sub: { fontSize: 14, fontWeight: '600', color: theme.colors.dark },
-  empty: { color: theme.colors.greyDark, textAlign: 'center', marginTop: 24 },
-  footer: { padding: 16, gap: 10, borderTopWidth: 1, borderTopColor: '#f3f4f6' },
+  container: { flex: 1, backgroundColor: theme.colors.light },
+  list: { padding: 14, gap: 10, paddingBottom: 24 },
+  header: { marginBottom: 8, gap: 2 },
+  h: { fontSize: 20, fontWeight: '800', color: theme.colors.dark },
+  subHeader: { fontSize: 13, color: theme.colors.greyDark, marginBottom: 6 },
+  itemCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 12,
+    borderRadius: theme.radius.lg,
+  },
+  thumbBox: {
+    width: 48,
+    height: 48,
+    borderRadius: theme.radius.sm,
+    backgroundColor: theme.colors.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  thumbSpine: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 5,
+    backgroundColor: theme.colors.primary,
+  },
+  itemInfo: { flex: 1, gap: 2 },
+  name: { fontSize: 14, fontWeight: '700', color: theme.colors.dark },
+  unitInfo: { fontSize: 11, color: theme.colors.greyDark },
+  sub: { fontSize: 14, fontWeight: '800', color: theme.colors.primaryDark },
+  empty: { color: theme.colors.greyDark, textAlign: 'center', marginTop: 40, fontSize: 14 },
+  stickyFooter: {
+    backgroundColor: '#ffffff',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 20,
+    gap: 14,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 8,
+  },
   totalRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  totalLabel: { fontSize: 16, color: theme.colors.greyDark },
-  total: { fontSize: 20, fontWeight: '800', color: theme.colors.dark },
-  erro: { color: theme.colors.error, fontSize: 13 },
+  totalLabel: { fontSize: 16, fontWeight: '800', color: theme.colors.dark },
+  totalCount: { fontSize: 12, color: theme.colors.greyDark, marginTop: 1 },
+  total: { fontSize: 22, fontWeight: '800', color: theme.colors.primaryDark },
+  erro: { color: theme.colors.error, fontSize: 13, textAlign: 'center' },
 });

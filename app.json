@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Loja da Turma",
-    "slug": "loja-turma-app",
+    "name": "Livro Aberto",
+    "slug": "livro-aberto-app",
     "version": "0.2.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",

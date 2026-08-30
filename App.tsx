@@ -33,6 +33,7 @@ import { CheckoutScreen } from '@/screens/CheckoutScreen';
 import { OrderScreen } from '@/screens/OrderScreen';
 import { OrdersScreen } from '@/screens/OrdersScreen';
 import type { AuthStackParamList, RootStackParamList } from '@/navigation';
+import { theme } from '@/lib/theme';
 
 // Criação das duas pilhas de navegação nativa separadas por domínio
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -59,9 +60,16 @@ function AuthFlow() {
  */
 function AppFlow() {
   return (
-    <AppStack.Navigator>
-      {/* Vitrine do Catálogo */}
-      <AppStack.Screen name="Products" component={ProductsScreen} options={{ title: 'Livro Aberto' }} />
+    <AppStack.Navigator
+      screenOptions={{
+        headerStyle: { backgroundColor: theme.colors.primary },
+        headerTintColor: '#ffffff',
+        headerTitleStyle: { fontWeight: '700', fontSize: 18 },
+        headerShadowVisible: false,
+      }}
+    >
+      {/* Vitrine do Catálogo com cabeçalho azul nativo da própria tela */}
+      <AppStack.Screen name="Products" component={ProductsScreen} options={{ headerShown: false }} />
 
       {/* Detalhe do Produto: título dinâmico com o nome do produto passado via params */}
       <AppStack.Screen

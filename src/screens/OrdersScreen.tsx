@@ -46,8 +46,20 @@ export function OrdersScreen({ navigation }: Props) {
        * - A expressão `isFetching && !isLoading` ativa a animação giratória do Pull-to-Refresh
        *   somente quando o usuário arrasta a lista para baixo, sem disparar o spinner de tela cheia!
        */
-      refreshControl={<RefreshControl refreshing={isFetching && !isLoading} onRefresh={() => refetch()} />}
-      ListEmptyComponent={<Text style={styles.empty}>Você ainda não fez pedidos.</Text>}
+      refreshControl={
+        <RefreshControl
+          refreshing={isFetching && !isLoading}
+          onRefresh={() => refetch()}
+          colors={[theme.colors.primary]}
+        />
+      }
+      ListHeaderComponent={
+        <View style={styles.header}>
+          <Text style={styles.title}>Meus Pedidos</Text>
+          <Text style={styles.subtitle}>Acompanhe o status e histórico das suas compras</Text>
+        </View>
+      }
+      ListEmptyComponent={<Text style={styles.empty}>Você ainda não fez nenhum pedido.</Text>}
       renderItem={({ item }) => (
         // Card clicável que leva aos detalhes do pedido selecionado
         <Pressable 
@@ -55,16 +67,25 @@ export function OrdersScreen({ navigation }: Props) {
           onPress={() => navigation.navigate('Order', { id: item.id })}
         >
           <View style={styles.top}>
-            {/* Exibe apenas os últimos 6 caracteres do ID para não poluir visualmente */}
-            <Text style={styles.pedido}>#{item.id.slice(-6)}</Text>
+            <View style={styles.idBox}>
+              <Text style={styles.idPrefix}>PEDIDO</Text>
+              {/* Exibe apenas os últimos 6 caracteres do ID para não poluir visualmente */}
+              <Text style={styles.pedido}>#{item.id.slice(-6).toUpperCase()}</Text>
+            </View>
             {/* Badge com rótulo amigável ("Aguardando pagamento", "Pago") e cor semântica */}
             <Badge label={statusLabel(item.status)} color={statusColor(item.status)} />
           </View>
 
-          {/* Quantidade de itens e valor total formatado em moeda */}
-          <Text style={styles.sub}>
-            {item.items.length} {item.items.length === 1 ? 'item' : 'itens'} · {money(item.total)}
-          </Text>
+          <View style={styles.divider} />
+
+          <View style={styles.bottomRow}>
+            {/* Quantidade de itens */}
+            <Text style={styles.itemCount}>
+              📦 {item.items.length} {item.items.length === 1 ? 'item' : 'itens'}
+            </Text>
+            {/* Valor total formatado em moeda */}
+            <Text style={styles.totalValue}>{money(item.total)}</Text>
+          </View>
         </Pressable>
       )}
     />
@@ -72,11 +93,31 @@ export function OrdersScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
-  list: { padding: 12, gap: 10 },
-  card: { backgroundColor: theme.colors.primaryLight, borderRadius: 12, padding: 12, gap: 6 },
+  container: { flex: 1, backgroundColor: theme.colors.light },
+  list: { padding: 14, gap: 12, paddingBottom: 28 },
+  header: { marginBottom: 4, gap: 2 },
+  title: { fontSize: 22, fontWeight: '800', color: theme.colors.dark },
+  subtitle: { fontSize: 13, color: theme.colors.greyDark, marginBottom: 6 },
+  card: {
+    backgroundColor: '#ffffff',
+    borderRadius: theme.radius.xl,
+    padding: 16,
+    gap: 12,
+    borderWidth: 1,
+    borderColor: theme.colors.greyLight,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2,
+  },
   top: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  pedido: { fontSize: 15, fontWeight: '700', color: theme.colors.dark },
-  sub: { fontSize: 13, color: theme.colors.primaryDark },
-  empty: { color: theme.colors.greyDark, textAlign: 'center', marginTop: 40 },
+  idBox: { gap: 1 },
+  idPrefix: { fontSize: 10, fontWeight: '800', color: theme.colors.greyDark, letterSpacing: 0.5 },
+  pedido: { fontSize: 16, fontWeight: '800', color: theme.colors.dark },
+  divider: { height: 1, backgroundColor: '#f1f5f9' },
+  bottomRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  itemCount: { fontSize: 13, fontWeight: '600', color: theme.colors.greyDark },
+  totalValue: { fontSize: 16, fontWeight: '800', color: theme.colors.primaryDark },
+  empty: { color: theme.colors.greyDark, textAlign: 'center', marginTop: 40, fontSize: 14 },
 });

@@ -53,7 +53,41 @@ import {
 
 /**
  * ============================================================================
- * 1. COMPONENTE: TextField (Campo de Entrada de Texto Customizado)
+ * 1. COMPONENTE: Card (Contêiner em Cartão Branco Arredondado)
+ * ============================================================================
+ * 
+ * Componente base de agrupamento visual com fundo branco, cantos arredondados
+ * e sombra sutil para destacar blocos de informação sobre o fundo cinza-claro.
+ */
+export function Card({ children, style }: { children: ReactNode; style?: any }) {
+  return <View style={[styles.card, style]}>{children}</View>;
+}
+
+/**
+ * ============================================================================
+ * 2. COMPONENTE: BookIcon (Ícone Visual de Capa de Livro)
+ * ============================================================================
+ * 
+ * Componente reutilizável para exibir a miniatura de livro com lombada azul e
+ * ícone central, garantindo consistência visual em todas as telas da livraria.
+ */
+export function BookIcon({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
+  const isSm = size === 'sm';
+  const isLg = size === 'lg';
+  const boxSize = isSm ? 52 : isLg ? 160 : 74;
+  const emojiSize = isSm ? 22 : isLg ? 64 : 32;
+
+  return (
+    <View style={[styles.bookBox, { width: boxSize, height: boxSize }]}>
+      <View style={styles.bookSpine} />
+      <Text style={{ fontSize: emojiSize }}>📖</Text>
+    </View>
+  );
+}
+
+/**
+ * ============================================================================
+ * 3. COMPONENTE: TextField (Campo de Entrada de Texto Customizado)
  * ============================================================================
  * 
  * Este componente encapsula o <TextInput> padrão do React Native, já aplicando
@@ -69,20 +103,22 @@ import {
  * O `{...props}` (Spread Operator) repassa automaticamente qualquer uma dessas
  * propriedades que quem chamar o `<TextField />` decidir usar.
  */
-export function TextField(props: TextInputProps) {
+export function TextField({ label, ...props }: TextInputProps & { label?: string }) {
   return (
-    <TextInput
-      placeholderTextColor="#9ca3af" // Cor cinza suave para a dica/placeholder
-      style={styles.input}           // Aplica nossa formatação visual pré-definida
-      {...props}                     // Repassa value, onChangeText, etc.
-    />
+    <View style={styles.fieldGroup}>
+      {label && <Text style={styles.fieldLabel}>{label}</Text>}
+      <TextInput
+        placeholderTextColor="#94a3b8" // Cor cinza suave para a dica/placeholder
+        style={styles.input}           // Aplica nossa formatação visual pré-definida
+        {...props}                     // Repassa value, onChangeText, etc.
+      />
+    </View>
   );
 }
 
-
 /**
  * ============================================================================
- * 2. COMPONENTE: Badge (Etiqueta de Status Colorida em Formato Pílula)
+ * 4. COMPONENTE: Badge (Etiqueta de Status Colorida em Formato Pílula)
  * ============================================================================
  * 
  * Componente visual compacto utilizado para destacar o status atual de entidades,
@@ -99,9 +135,17 @@ export function TextField(props: TextInputProps) {
  * - `[styles.badge, { borderColor: color }]`: Combinação de estilo fixo com
  *   estilo dinâmico via array de estilos.
  */
-export function Badge({ label, color }: { label: string; color: string }) {
+export function Badge({ label, color, variant = 'subtle' }: { label: string; color: string; variant?: 'subtle' | 'outline' }) {
+  const isOutline = variant === 'outline';
   return (
-    <View style={[styles.badge, { borderColor: color }]}>
+    <View
+      style={[
+        styles.badge,
+        isOutline
+          ? { borderColor: color, borderWidth: 1 }
+          : { backgroundColor: `${color}15`, borderColor: 'transparent' },
+      ]}
+    >
       <Text style={[styles.badgeText, { color }]}>{label}</Text>
     </View>
   );
@@ -109,7 +153,7 @@ export function Badge({ label, color }: { label: string; color: string }) {
 
 /**
  * ============================================================================
- * 3. COMPONENTE: Center (Centralizador de Conteúdo)
+ * 5. COMPONENTE: Center (Centralizador de Conteúdo)
  * ============================================================================
  * 
  * É um componente "embrulho" (Wrapper). Qualquer coisa colocada dentro dele
@@ -125,7 +169,7 @@ export function Center({ children }: { children: ReactNode }) {
 
 /**
  * ============================================================================
- * 4. COMPONENTE: Loading (Tela de Carregamento)
+ * 6. COMPONENTE: Loading (Tela de Carregamento)
  * ============================================================================
  * 
  * Usado quando estamos esperando uma requisição (ex: buscando produtos da API).
@@ -139,7 +183,7 @@ export function Loading({ label = 'Carregando…' }: { label?: string }) {
   return (
     <Center>
       {/* size="large" deixa a rodinha em tamanho grande */}
-      <ActivityIndicator size="large" color={theme.colors.dark} />
+      <ActivityIndicator size="large" color={theme.colors.primary} />
       <Text style={styles.muted}>{label}</Text>
     </Center>
   );
@@ -147,7 +191,7 @@ export function Loading({ label = 'Carregando…' }: { label?: string }) {
 
 /**
  * ============================================================================
- * 5. COMPONENTE: ErrorState (Tela de Erro com Botão de Recarregar)
+ * 7. COMPONENTE: ErrorState (Tela de Erro com Botão de Recarregar)
  * ============================================================================
  * 
  * Usado quando uma requisição falha (ex: sem internet, servidor caiu).
@@ -166,7 +210,9 @@ export function ErrorState({ message, onRetry }: { message: string; onRetry?: ()
       <Text style={styles.errorTitle}>Algo deu errado</Text>
       <Text style={styles.muted}>{message}</Text>
       {onRetry && (
-        <Button label="Tentar de novo" onPress={onRetry} />
+        <View style={{ marginTop: 12 }}>
+          <Button label="Tentar de novo" onPress={onRetry} />
+        </View>
       )}
     </Center>
   );
@@ -174,15 +220,17 @@ export function ErrorState({ message, onRetry }: { message: string; onRetry?: ()
 
 /**
  * ============================================================================
- * 6. COMPONENTE: Button (Botão Clicável Customizado)
+ * 8. COMPONENTE: Button (Botão Clicável Customizado)
  * ============================================================================
  * 
  * - `label`: O texto que aparece escrito dentro do botão.
  * - `onPress`: A função que será disparada quando o usuário der um toque no botão.
  * - `disabled?`: Se for true, o botão fica desativado e não responde a toques.
  * - `variant`: Define a aparência do botão:
- *      * 'primary' (padrão): Fundo preto sólido com texto branco.
- *      * 'ghost': Fundo transparente com borda cinza e texto preto.
+ *      * 'primary' (padrão): Fundo azul sólido com texto branco.
+ *      * 'secondary': Fundo verde/menta suave com texto escuro.
+ *      * 'ghost': Fundo transparente com borda cinza e texto escuro.
+ *      * 'danger': Fundo ou texto em tom de erro.
  * 
  * - `style={({ pressed }) => [ ... ]}`:
  *   O Pressable recebe uma função de estilo. O React Native nos entrega o booleano `pressed`.
@@ -195,23 +243,37 @@ export function Button({
   onPress,
   disabled,
   variant = 'primary',
+  style,
 }: {
   label: string;
   onPress: () => void;
   disabled?: boolean;
-  variant?: 'primary' | 'ghost';
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
+  style?: any;
 }) {
   return (
     <Pressable
       onPress={onPress}
       disabled={disabled}
       style={({ pressed }) => [
-        styles.btn,                                 // 1. Estilo base (tamanho, formato)
-        variant === 'ghost' && styles.btnGhost,     // 2. Se for ghost, aplica fundo transparente e borda
-        (disabled || pressed) && styles.btnDim,     // 3. Se estiver desabilitado ou pressionado, fica meio transparente
+        styles.btn,
+        variant === 'primary' && styles.btnPrimary,
+        variant === 'secondary' && styles.btnSecondary,
+        variant === 'ghost' && styles.btnGhost,
+        variant === 'danger' && styles.btnDanger,
+        (disabled || pressed) && styles.btnDim,
+        style,
       ]}
     >
-      <Text style={[styles.btnText, variant === 'ghost' && styles.btnTextGhost]}>
+      <Text
+        style={[
+          styles.btnText,
+          variant === 'primary' && styles.btnTextPrimary,
+          variant === 'secondary' && styles.btnTextSecondary,
+          variant === 'ghost' && styles.btnTextGhost,
+          variant === 'danger' && styles.btnTextDanger,
+        ]}
+      >
         {label}
       </Text>
     </Pressable>
@@ -230,68 +292,120 @@ export function Button({
  *    por padrão (`flexDirection: 'column'`).
  */
 const styles = StyleSheet.create({
+  card: {
+    backgroundColor: theme.colors.white,
+    borderRadius: theme.radius.xl,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: theme.colors.greyLight,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  bookBox: {
+    backgroundColor: theme.colors.primaryLight,
+    borderRadius: theme.radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  bookSpine: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 6,
+    backgroundColor: theme.colors.primary,
+  },
   center: {
-    flex: 1,                  // Ocupa 100% da altura e largura da tela
-    alignItems: 'center',     // Centraliza no sentido horizontal (esquerda <-> direita)
-    justifyContent: 'center', // Centraliza no sentido vertical (topo <-> base)
-    padding: 24,              // Espaço interno nas bordas para o conteúdo não colar na tela
-    gap: 8,                   // Espaço de 8 unidades entre cada elemento filho
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+    gap: 8,
+    backgroundColor: theme.colors.light,
   },
   muted: {
-    color: '#6b7280',         // Cor cinza neutra
-    textAlign: 'center'       // Alinhamento centralizado do texto
+    color: theme.colors.greyDark,
+    textAlign: 'center',
+    fontSize: 14,
   },
   errorTitle: {
-    fontSize: 16,             // Tamanho da fonte
-    fontWeight: '700',        // Negrito (bold)
-    color: theme.colors.error          // Vermelho de alerta de erro
+    fontSize: 18,
+    fontWeight: '700',
+    color: theme.colors.error,
   },
-  btn: {
-    backgroundColor: theme.colors.primary, // Azul
-    borderWidth: 1,                 // Linha de borda com espessura 1
-    borderBottomWidth: 4,             // Borda inferior mais grossa para efeito 3D
-    borderColor: theme.colors.primaryDark,          // Borda azul escuro
-    paddingVertical: 12,        // Espaçamento interno em cima e embaixo
-    paddingHorizontal: 16,      // Espaçamento interno nas laterais (esquerda e direita)
-    marginHorizontal: 2,        // Margem horizontal para separar de outros elementos
-    borderRadius: 10,           // Cantos arredondados
-    alignItems: 'center',       // Centraliza o texto no meio do botão
+  fieldGroup: {
+    gap: 6,
   },
-  btnGhost: {
-    backgroundColor: 'transparent', // Fundo transparente
-    borderWidth: 1,                 // Linha de borda com espessura 1
-    borderBottomWidth: 4,             // Borda inferior mais grossa para efeito 3D
-    marginHorizontal: 2,        // Margem horizontal para separar de outros elementos
-    borderColor: theme.colors.primaryDark          // Borda azul escuro
-  },
-  btnDim: {
-    opacity: 0.55 // Deixa o botão semitransparente (usado quando clicado ou desativado)
-  },
-  btnText: {
-    color: '#fff',       // Texto branco
-    fontWeight: '700'    // Negrito
-  },
-  btnTextGhost: {
-    color: theme.colors.dark     // Texto escuro para combinar com o botão transparente
+  fieldLabel: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: theme.colors.greyDark,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   input: {
     borderWidth: 1,
-    borderBottomWidth: 4, // Borda inferior mais grossa para efeito 3D
     borderColor: theme.colors.greyLight,
-    borderRadius: 10,
-    marginHorizontal: 2,        // Margem horizontal para separar de outros elementos
-    paddingHorizontal: 12,
+    backgroundColor: theme.colors.white,
+    borderRadius: theme.radius.md,
+    paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 15,
     color: theme.colors.dark,
   },
   badge: {
     alignSelf: 'flex-start',
-    borderWidth: 1,
-    borderBottomWidth: 4,   // Borda inferior mais grossa para efeito 3D
-    borderRadius: 999,
+    borderRadius: theme.radius.full,
     paddingHorizontal: 10,
-    paddingVertical: 3,
+    paddingVertical: 4,
   },
-  badgeText: { fontSize: 12, fontWeight: '700' },
+  badgeText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  btn: {
+    paddingVertical: 14,
+    paddingHorizontal: 18,
+    borderRadius: theme.radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  btnPrimary: {
+    backgroundColor: theme.colors.primary,
+  },
+  btnSecondary: {
+    backgroundColor: theme.colors.mintLight,
+  },
+  btnGhost: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: theme.colors.greyLight,
+  },
+  btnDanger: {
+    backgroundColor: theme.colors.errorLight,
+  },
+  btnDim: {
+    opacity: 0.65,
+  },
+  btnText: {
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  btnTextPrimary: {
+    color: '#ffffff',
+  },
+  btnTextSecondary: {
+    color: theme.colors.mintDark,
+  },
+  btnTextGhost: {
+    color: theme.colors.dark,
+  },
+  btnTextDanger: {
+    color: theme.colors.error,
+  },
 });
