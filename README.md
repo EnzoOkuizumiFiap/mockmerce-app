@@ -127,7 +127,7 @@ Para avaliação do corretor, utilize o usuário de teste já registrado na noss
   > *(Espaço para relato do integrante sobre como utilizou a IA, o que aprendeu e o que alterou manualmente)*
 
 **Lucas Barros Gouveia:**
-  > *(Espaço para relato do integrante sobre como utilizou a IA, o que aprendeu e o que alterou manualmente)*
+  > Não utilizei IA, mas usei de tecnicas de projetos anteriores e códigos meus e de meus colegas.
 
 **Luna de Carvalho Guimarães:**
 > Usei a IA para esclarecer dúvidas técnicas, organizar melhor o código para deixá-lo mais limpo e me auxiliar no refinamento da estilização das telas do app.
