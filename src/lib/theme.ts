@@ -18,6 +18,8 @@ export const theme = {
     greyDark: '#64748b',
     error: '#b91c1c',
     errorLight: '#fee2e2',
+    danger: '#b91c1c',
+    dangerLight: '#fee2e2',
     success: '#15803d',
     successLight: '#dcfce7',
   },

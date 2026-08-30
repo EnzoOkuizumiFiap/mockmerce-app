@@ -1,5 +1,5 @@
 import { http } from './http';
-import type { AuthResponse } from '@/types/api';
+import type { AuthResponse, Customer } from '@/types/api';
 
 /**
  * ============================================================================
@@ -69,5 +69,18 @@ export async function forgotPassword(email: string): Promise<void> {
  */
 export async function resetPassword(email: string, code: string, newPassword: string): Promise<AuthResponse> {
   const { data } = await http.post<AuthResponse>('/auth/reset-password', { email, code, newPassword });
+  return data;
+}
+
+/**
+ * 5. Obter Perfil do Usuário Autenticado (GET /auth/me)
+ * 
+ * Valida o token JWT no servidor e retorna os dados cadastrais atualizados do cliente.
+ * Utilizado na inicialização do aplicativo para restaurar a sessão segura.
+ * 
+ * @returns Promise<Customer> - Dados do comprador autenticado
+ */
+export async function getMe(): Promise<Customer> {
+  const { data } = await http.get<Customer>('/auth/me');
   return data;
 }

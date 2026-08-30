@@ -64,15 +64,20 @@ export function CartScreen({ navigation }: Props) {
                 : `Olá, ${customer?.name ?? 'leitor'}. Seu carrinho está vazio.`}
             </Text>
 
-            {/* Acesso rápido a catálogo e histórico de pedidos */}
+            {/* Acesso rápido a catálogo, favoritos e histórico de pedidos */}
             <View style={styles.quickNav}>
               <Button
-                label="📚 Explorar Livros"
+                label="📚 Livros"
                 variant="ghost"
                 onPress={() => navigation.navigate('Products')}
               />
               <Button
-                label="📦 Meus Pedidos"
+                label="❤️ Favoritos"
+                variant="ghost"
+                onPress={() => navigation.navigate('Favorites')}
+              />
+              <Button
+                label="📦 Pedidos"
                 variant="ghost"
                 onPress={() => navigation.navigate('Orders')}
               />

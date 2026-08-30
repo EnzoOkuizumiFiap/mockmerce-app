@@ -61,13 +61,20 @@ export function ProductsScreen({ navigation }: Props) {
           />
         </View>
 
-        {/* Botões de Acesso Rápido a Pedidos e Carrinho */}
+        {/* Botões de Acesso Rápido a Pedidos, Favoritos e Carrinho */}
         <View style={styles.actionRow}>
           <Pressable
             style={styles.actionBtnOutline}
             onPress={() => navigation.navigate('Orders')}
           >
             <Text style={styles.actionBtnTextOutline}>📦 Pedidos</Text>
+          </Pressable>
+
+          <Pressable
+            style={styles.actionBtnOutline}
+            onPress={() => navigation.navigate('Favorites')}
+          >
+            <Text style={styles.actionBtnTextOutline}>❤️ Favoritos</Text>
           </Pressable>
 
           <Pressable

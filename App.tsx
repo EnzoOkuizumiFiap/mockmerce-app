@@ -32,6 +32,7 @@ import { CartScreen } from '@/screens/CartScreen';
 import { CheckoutScreen } from '@/screens/CheckoutScreen';
 import { OrderScreen } from '@/screens/OrderScreen';
 import { OrdersScreen } from '@/screens/OrdersScreen';
+import { FavoritesScreen } from '@/screens/FavoritesScreen';
 import type { AuthStackParamList, RootStackParamList } from '@/navigation';
 import { theme } from '@/lib/theme';
 
@@ -85,6 +86,7 @@ function AppFlow() {
       <AppStack.Screen name="Checkout" component={CheckoutScreen} options={{ title: 'Checkout' }} />
       <AppStack.Screen name="Order" component={OrderScreen} options={{ title: 'Pedido' }} />
       <AppStack.Screen name="Orders" component={OrdersScreen} options={{ title: 'Meus pedidos' }} />
+      <AppStack.Screen name="Favorites" component={FavoritesScreen} options={{ title: 'Meus Favoritos' }} />
     </AppStack.Navigator>
   );
 }

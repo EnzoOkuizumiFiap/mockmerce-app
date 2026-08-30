@@ -7,7 +7,9 @@ import {
   Text,
   TextInput,
   View,
-  type TextInputProps
+  type StyleProp,
+  type TextInputProps,
+  type ViewStyle,
 } from 'react-native';
 
 /**
@@ -59,7 +61,7 @@ import {
  * Componente base de agrupamento visual com fundo branco, cantos arredondados
  * e sombra sutil para destacar blocos de informação sobre o fundo cinza-claro.
  */
-export function Card({ children, style }: { children: ReactNode; style?: any }) {
+export function Card({ children, style }: { children: ReactNode; style?: StyleProp<ViewStyle> }) {
   return <View style={[styles.card, style]}>{children}</View>;
 }
 
@@ -249,7 +251,7 @@ export function Button({
   onPress: () => void;
   disabled?: boolean;
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
-  style?: any;
+  style?: StyleProp<ViewStyle>;
 }) {
   return (
     <Pressable

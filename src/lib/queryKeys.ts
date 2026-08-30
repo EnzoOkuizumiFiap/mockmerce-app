@@ -52,4 +52,12 @@ export const queryKeys = {
     // Chave para o timeline/histórico de status do pedido: ['orders', 'timeline', 'order_123']
     timeline: (id: string) => ['orders', 'timeline', id] as const,
   },
+
+  favorites: {
+    // Chave base para todas as queries de favoritos: ['favorites']
+    all: ['favorites'] as const,
+
+    // Chave para a listagem de favoritos do comprador: ['favorites', 'list']
+    list: () => ['favorites', 'list'] as const,
+  },
 };

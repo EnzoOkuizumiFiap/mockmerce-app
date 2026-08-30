@@ -35,4 +35,5 @@ export type RootStackParamList = {
   Checkout: undefined;                       // Tela de Checkout
   Order: { id: string };                     // Tela de Pedido
   Orders: undefined;                         // Tela de Pedidos
+  Favorites: undefined;                      // Tela de Favoritos do Comprador
 };

@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react';
-import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useProduct } from '@/hooks/useProduct';
 import { useCartMutations } from '@/hooks/useCartMutations';
+import { useToggleFavorite } from '@/hooks/useFavorites';
 import { useSession } from '@/session/session';
 import { money } from '@/lib/format';
 import { Button, Card, ErrorState, Loading } from '@/components/ui';
@@ -36,6 +37,9 @@ export function ProductDetailScreen({ route, navigation }: Props) {
 
   // 4. Hook de mutação para adicionar itens ao carrinho
   const { addItem } = useCartMutations();
+
+  // 5. Hook de favoritos para favoritar/desfavoritar a variante
+  const { isFavorite, toggle, isPending: isFavPending } = useToggleFavorite();
 
   // Estado que armazena a variante selecionada pelo usuário (ex: id da variante "Tamanho M")
   const [variantId, setVariantId] = useState<string | null>(null);
@@ -187,13 +191,24 @@ export function ProductDetailScreen({ route, navigation }: Props) {
         </Card>
       </ScrollView>
 
-      {/* Rodapé Fixo com Botão de Adicionar ao Carrinho */}
+      {/* Rodapé Fixo com Botão de Favoritar e Adicionar ao Carrinho */}
       <View style={styles.footer}>
-        <Button
-          label={addItem.isPending ? 'Adicionando…' : 'Adicionar ao carrinho'}
-          onPress={handleAdd}
-          disabled={outOfStock || !isLoggedIn || addItem.isPending}
-        />
+        {selected && isLoggedIn && (
+          <Pressable
+            style={[styles.favBtn, isFavorite(selected.id) && styles.favBtnActive]}
+            onPress={() => toggle(selected.id)}
+            disabled={isFavPending}
+          >
+            <Text style={styles.favIcon}>{isFavorite(selected.id) ? '❤️' : '🤍'}</Text>
+          </Pressable>
+        )}
+        <View style={{ flex: 1 }}>
+          <Button
+            label={addItem.isPending ? 'Adicionando…' : 'Adicionar ao carrinho'}
+            onPress={handleAdd}
+            disabled={outOfStock || !isLoggedIn || addItem.isPending}
+          />
+        </View>
       </View>
     </View>
   );
@@ -342,5 +357,25 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 8,
     elevation: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  favBtn: {
+    width: 48,
+    height: 48,
+    borderRadius: theme.radius.lg,
+    borderWidth: 1.5,
+    borderColor: theme.colors.greyLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#ffffff',
+  },
+  favBtnActive: {
+    borderColor: '#fca5a5',
+    backgroundColor: '#fff1f2',
+  },
+  favIcon: {
+    fontSize: 20,
   },
 });

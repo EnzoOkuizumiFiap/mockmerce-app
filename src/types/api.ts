@@ -287,6 +287,28 @@ export interface PayOrderInput {
 }
 
 // ----------------------------------------------------------------------------
+// 4.1 FAVORITOS DO COMPRADOR (FAVORITES)
+// ----------------------------------------------------------------------------
+
+/**
+ * Item favoritado pelo comprador (GET /customers/me/favorites).
+ * Vinculado à `variantId` (a unidade vendável com preço e estoque).
+ */
+export interface FavoriteItem {
+  id?: string;
+  variantId: string;
+  productId?: string;
+  name?: string;
+  productName?: string;
+  variantName?: string | null;
+  sku?: string;
+  price?: number;
+  stock?: number;
+  image?: string | null;
+  createdAt?: string;
+}
+
+// ----------------------------------------------------------------------------
 // 5. TRATAMENTO DE ERROS PADRONIZADO (ERROR HANDLING)
 // ----------------------------------------------------------------------------
 

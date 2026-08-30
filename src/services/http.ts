@@ -73,6 +73,16 @@ http.interceptors.request.use((config) => {
 // ----------------------------------------------------------------------------
 
 /**
+ * Callback disparado automaticamente quando o backend retorna 401 Unauthorized.
+ * Permite que a camada de sessão derrube o login e devolva o usuário à tela de login.
+ */
+let unauthorizedCallback: (() => void) | null = null;
+
+export function setUnauthorizedCallback(callback: (() => void) | null) {
+  unauthorizedCallback = callback;
+}
+
+/**
  * INTERCEPTOR DE RESPOSTA (Response Interceptor):
  * Executado AUTOMATICAMENTE assim que uma resposta chega da internet, antes de
  * ser entregue para o seu `try/catch` ou para o React Query.
@@ -86,6 +96,11 @@ http.interceptors.response.use(
   (error: AxiosError<{ error?: { code?: string; message?: string } }>) => {
     const status = error.response?.status ?? 0;
     const payload = error.response?.data?.error;
+
+    // Se qualquer rota protegida responder 401 (token expirado ou adulterado), encerra a sessão imediatamente
+    if (status === 401 && unauthorizedCallback) {
+      unauthorizedCallback();
+    }
 
     // Cenário A: O backend respondeu com JSON de erro estruturado (ex: 400 com mensagem "E-mail inválido")
     if (payload) {
