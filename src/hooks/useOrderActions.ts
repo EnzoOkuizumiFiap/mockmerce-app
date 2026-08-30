@@ -98,10 +98,9 @@ export function useRefundOrder() {
 
   return useMutation({
     mutationFn: (id: string) => refundOrder(id),
-    onSuccess: (order: Order) => {
-      queryClient.setQueryData(queryKeys.orders.detail(order.id), order);
-      queryClient.invalidateQueries({ queryKey: queryKeys.orders.list() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.orders.timeline(order.id) });
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: ['orders', id] });
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
     },
   });
 }
