@@ -124,7 +124,7 @@ Para avaliação do corretor, utilize o usuário de teste já registrado na noss
   > Usei o Gemini 3.7 flash para comentar/entender todo o código! Agora, eu entendi de fato todo o código? Sim e Nãokkkkkkkkk, ainda preciso melhorar minhas habilidades no REACT e no JS... E também fiquei com preguiça pra ler tudo (Se passou de 3 linhas eu não leioKKKKKKKKK). Bom, quando minhas habilidades estiverem melhores, eu vou ler tudo e entender de fato... Ou não também, provável que eu já tenha esquecido desse projeto. Hm, recomendo ler as obras que cadastramos aí! 
 
 **Gustavo Keiji Okada:**
-  > *(Espaço para relato do integrante sobre como utilizou a IA, o que aprendeu e o que alterou manualmente)*
+  > No máximo verifiquei uma ou outra dúvida por meio da IA. Porém o código em si, foi mais baseado em materiais passados e aulas passadas. O bug inclusive que foi resolvido foi algo que foi um erro bem besta na realidade. Ainda preciso melhorar bastante meu conhecimento de REACT em si.
 
 **Lucas Barros Gouveia:**
   > Não utilizei IA, mas usei de tecnicas de projetos anteriores e códigos meus e de meus colegas.
