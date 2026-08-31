@@ -133,7 +133,7 @@ Para avaliação do corretor, utilize o usuário de teste já registrado na noss
 > Usei a IA para esclarecer dúvidas técnicas, organizar melhor o código para deixá-lo mais limpo e me auxiliar no refinamento da estilização das telas do app.
 
 **Milton Jakson de Sousa Marcelino:**
-  > *(Espaço para relato do integrante sobre como utilizou a IA, o que aprendeu e o que alterou manualmente)*
+  > Usei a IA para auxiliar a construir algumas partes referente ao webhook e cotar frete e explicar o código, modifiquei algumas telas referente ao cotar frete.
 
 ---
 
