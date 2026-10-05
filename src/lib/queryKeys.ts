@@ -32,6 +32,9 @@ export const queryKeys = {
 
     // Chave para a página de detalhe de um produto específico: ['products', 'detail', 'prod_123']
     detail: (id: string) => ['products', 'detail', id] as const,
+
+    // Chave para buscas de produtos por termo: ['products', 'search', { search: 'camiseta' }]
+    search: (search: string) => ['products', 'search', search] as const,
   },
 
   cart: {

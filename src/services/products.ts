@@ -52,3 +52,17 @@ export async function getProduct(id: string): Promise<Product> {
   const { data } = await http.get<Product>(`/products/${id}`);
   return data;
 }
+
+/**
+ * Busca por termo.
+ *
+ * REPARE QUE E O MESMO ENDPOINT DA LISTAGEM, com um parametro a mais. Nao ha
+ * `/products/search` nesta API — buscar e listar com filtro. Por isso as duas
+ * funcoes tem a mesma forma e o mesmo tipo de retorno.
+ */
+export async function getProductsByName(name: string): Promise<ProductSummary[]> {
+  const answer = await http.get<Paginated<ProductSummary>>('/products', {
+    params: { search: name, page: 1, pageSize: 20 },
+  });
+  return answer.data.data;
+}
