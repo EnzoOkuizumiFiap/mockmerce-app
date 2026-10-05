@@ -59,8 +59,8 @@ export interface ProductSummary {
   id: string;               // Identificador único do produto pai
   name: string;             // Nome comercial do produto
   slug: string;             // Identificador amigável para URLs/rotas (ex: "tenis-corrida-pro")
-  type: ProductType;        // 'SIMPLE' ou 'VARIABLE'
-  state: ProductState;      // 'DRAFT', 'PUBLISHED' ou 'HIDDEN'
+  type: 'SIMPLE' | 'VARIABLE';        // 'SIMPLE' ou 'VARIABLE'
+  state: 'DRAFT' | 'PUBLISHED' | 'HIDDEN';      // 'DRAFT', 'PUBLISHED' ou 'HIDDEN'
   brand: string | null;     // Marca/Fabricante (ou null se não informada)
   categoryId: string | null;// Categoria vinculada
   priceFrom: number;        // Menor preço encontrado entre as variantes (ex: R$ 89,90) - "A partir de"
@@ -111,9 +111,9 @@ export interface ProductVariant {
 export interface Product {
   id: string;                                                          // ID único do produto
   name: string;                                                        // Nome completo
-  slug: string;                                                        // Slug de identificação
-  type: ProductType;                                                   // Tipo ('SIMPLE' | 'VARIABLE')
-  state: ProductState;                                                 // Estado de publicação
+  slug: string;
+  type: 'SIMPLE' | 'VARIABLE';
+  state: 'DRAFT' | 'PUBLISHED' | 'HIDDEN';                                         // Estado de publicação
   description: string | null;                                          // Descrição detalhada do produto
   category: { id: string; name: string } | null;                       // Categoria associada
   brand: { id: string; name: string } | null;                          // Marca associada
