@@ -28,7 +28,7 @@ export function useCheckout() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: checkout, // Chama POST /orders/checkout
+    mutationFn: (pickupPointId?: string) => checkout(pickupPointId), // Chama POST /orders/checkout
     onSuccess: () => {
       // 1. Marca o cache do carrinho como obsoleto para forçar refetch e mostrar carrinho zerado
       queryClient.invalidateQueries({ queryKey: queryKeys.cart.all });

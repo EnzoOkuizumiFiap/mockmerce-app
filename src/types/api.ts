@@ -246,6 +246,7 @@ export interface Order {
   items: OrderItem[];       // Lista de itens congelados no momento do checkout
   payment: Payment | null;  // Informações de pagamento (ou null se ainda não pago/processado)
   createdAt: string;        // Data ISO de emissão do pedido
+  pickup?: { pickupPointId?: string; name?: string } | null; // Ponto de entrega de um pedido
 }
 
 /**

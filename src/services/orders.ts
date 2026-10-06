@@ -30,8 +30,11 @@ import type { Order, PaymentMethod, TimelineEntry } from '@/types/api';
  * 3. Esvazia o carrinho de compras do cliente no banco de dados.
  * 4. Retorna a entidade `Order` recém-criada.
  */
-export async function checkout(): Promise<Order> {
-  const { data } = await http.post<Order>('/orders/checkout');
+export async function checkout(pickupPointId?: string): Promise<Order> {
+  const { data } = await http.post<Order>(
+    '/orders/checkout',
+    pickupPointId ? { pickupPointId } : undefined,
+  );
   return data;
 }
 

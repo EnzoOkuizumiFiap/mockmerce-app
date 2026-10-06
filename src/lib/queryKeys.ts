@@ -63,4 +63,11 @@ export const queryKeys = {
     // Chave para a listagem de favoritos do comprador: ['favorites', 'list']
     list: () => ['favorites', 'list'] as const,
   },
+
+  pickup: {
+    all: ['pickup'] as const,
+    list: (position: { latitude: number; longitude: number } | null) =>
+      ['pickup', 'list', position] as const,
+    // Localização utilizada para os pontos de entrega de um produto
+  },
 };

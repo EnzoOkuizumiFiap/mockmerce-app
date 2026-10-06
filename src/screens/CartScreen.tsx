@@ -81,6 +81,11 @@ export function CartScreen({ navigation }: Props) {
                 variant="ghost"
                 onPress={() => navigation.navigate('Orders')}
               />
+              <Button
+                label="📍
+                Retirada" variant="ghost"
+                onPress={() => navigation.navigate('PickupPoints')}
+              />
             </View>
           </View>
         }

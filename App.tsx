@@ -72,6 +72,8 @@ function AppFlow() {
       {/* Vitrine do Catálogo com cabeçalho azul nativo da própria tela */}
       <AppStack.Screen name="Products" component={ProductsScreen} options={{ headerShown: false }} />
 
+      <AppStack.Screen name="PickupPoints" component={PickupPointsScreen} options={{ title: 'Pontos de retirada' }} />
+
       {/* Detalhe do Produto: título dinâmico com o nome do produto passado via params */}
       <AppStack.Screen
         name="ProductDetail"

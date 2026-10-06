@@ -36,4 +36,5 @@ export type RootStackParamList = {
   Order: { id: string };                     // Tela de Pedido
   Orders: undefined;                         // Tela de Pedidos
   Favorites: undefined;                      // Tela de Favoritos do Comprador
+  PickupPoints: undefined;                   // Pontos de entrega do Pedido
 };
