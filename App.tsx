@@ -35,6 +35,7 @@ import { OrdersScreen } from '@/screens/OrdersScreen';
 import { FavoritesScreen } from '@/screens/FavoritesScreen';
 import type { AuthStackParamList, RootStackParamList } from '@/navigation';
 import { theme } from '@/lib/theme';
+import { PickupPointsScreen } from '@/screens/PickupPointScreen';
 
 // Criação das duas pilhas de navegação nativa separadas por domínio
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -72,6 +73,7 @@ function AppFlow() {
       {/* Vitrine do Catálogo com cabeçalho azul nativo da própria tela */}
       <AppStack.Screen name="Products" component={ProductsScreen} options={{ headerShown: false }} />
 
+      {/* Pontos de Entrega do pedido */}
       <AppStack.Screen name="PickupPoints" component={PickupPointsScreen} options={{ title: 'Pontos de retirada' }} />
 
       {/* Detalhe do Produto: título dinâmico com o nome do produto passado via params */}
