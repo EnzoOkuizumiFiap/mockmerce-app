@@ -1,3 +1,6 @@
+# NÃO LEVE 100% A SÉRIO ESSE TAREFAS.MD, pois tem várias partes INCOERENTES!!
+# ENTÃO VEJA E MODIFIQUE DE ACORDO COM O REPO DO PROF!! 
+
 # 📋 Relatório Técnico e Plano de Migração: Mockmerce Professor ➔ Livro Aberto
 
 > **Documento Estratégico de Engenharia de Software Mobile**  
