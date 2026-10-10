@@ -17,7 +17,7 @@
 ### Declaração de uso de IA
 
 **Luna de Carvalho Guimarães (CP5):**
-> Usei o Claude (Anthropic) como apoio nos arquivos de pontos de retirada. [CONFIRMAR: a IA gerou a primeira versão do serviço, do hook e da tela.] Depois, a IA gerou o parâmetro `enabled` do hook, os arquivos `lojaService.ts` e `useLocalizacaoLoja.ts` e a atualização da tela com o marcador da loja. Eu conferi as respostas da API no Swagger, cadastrei os pontos de retirada e a localização da loja no painel e rodei o `tsc` para checar os erros. [PREENCHER: o que eu mudei ou decidi depois de gerar, com minhas palavras.]
+> Usei o Claude (Anthropic) para gerar os arquivos de pontos de retirada: o serviço, o hook e a tela, e depois o parâmetro `enabled` do hook, o `lojaService.ts`, o `useLocalizacaoLoja.ts` e o marcador da loja no mapa. O que eu fiz por conta própria: cadastrei os pontos de retirada e a localização da loja no painel, conferi as respostas da API (distâncias de 0,77 / 2,9 / 3,7 km) e rodei o `tsc` para checar os erros. Até agora não fiz alterações manuais no código gerado. Estou estudando os arquivos para conseguir explicar cada um na arguição.
 
 ### Diário de erro
 
@@ -39,12 +39,12 @@
    - O que apareceu: o JSON da resposta trazia `"\tPinheiros (oeste)"`, `"\t2365"` e `"\tSão Paulo"`.
    - Como investigou: li a resposta crua no Swagger.
    - Causa: um caractere de tabulação entrou ao copiar e colar os dados no formulário do painel.
-   - O que mudou: [PREENCHER depois de corrigir: editei o ponto no painel e redigitei os três campos.]
+   - O que mudou: o dado foi corrigido no painel e o `GET /pickup-points` passou a devolver os campos limpos. A tela não trata isso, a correção foi na fonte.
 
 ### O que não funciona (ainda)
 
 - **RF-47** (escolher retirada no checkout e enviar `pickupPointId`) não está implementado. Depende da base do app.
-- O app ainda não roda na `main`, que está em refatoração. As telas de retirada foram verificadas só pelo `tsc` e pela API no Swagger, e não foram testadas em aparelho ou emulador.
+- O app ainda não roda na `main`, que está em refatoração. As telas de retirada foram verificadas só pelo `tsc` e pela API no Swagger, e não foram testadas em aparelho.
 - O `tsc` ainda aponta 3 erros nos meus arquivos, todos de dependências de colegas: `useLocation`, `EstadoCarregando` e `lib/tema`.
 - Negar a localização, o cenário principal do RF-45, ainda não foi testado em aparelho.
 - A tela do pedido ainda não mostra o ponto de retirada escolhido.
