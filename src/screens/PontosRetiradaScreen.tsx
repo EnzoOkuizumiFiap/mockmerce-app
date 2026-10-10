@@ -6,8 +6,12 @@
  *
  * A PERMISSAO MELHORA A TELA, NAO DECIDE SE ELA EXISTE.
  * Com GPS: lista ordenada, distancia em cada item, ponto azul no mapa.
- * Sem GPS (negado ou falhou): a lista continua aparecendo, na ordem de
- * cadastro, com um aviso dizendo por que e um botao para tentar de novo.
+ * Sem GPS (negado ou falhou): a lista continua aparecendo, em ordem
+ * alfabetica (a API ordena por nome quando nao recebe a posicao), com um
+ * aviso dizendo por que e um botao para tentar de novo.
+ *
+ * A loja aparece no mapa com marcador proprio (RF-46). Ela e um dado de apoio:
+ * se a coordenada nao existir ou a busca falhar, a tela segue sem o marcador.
  *
  * Quatro estados de tela: carregando, erro, vazio e conteudo.
  * ---------------------------------------------------------------------------
@@ -18,11 +22,16 @@ import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 
 import { EstadoCarregando } from '../components/EstadoCarregando';
+import { useLocalizacaoLoja } from '../hooks/useLocalizacaoLoja';
 import { usePontosRetirada } from '../hooks/usePontosRetirada';
 import { cores } from '../lib/tema';
 import { PickupPoint } from '../types/location';
 
 const MARGEM_DO_MAPA = { top: 48, right: 48, bottom: 48, left: 48 };
+
+// Verde para a loja nao se confundir com os pontos de retirada (vermelho padrao)
+// nem com o ponto azul da posicao do usuario.
+const COR_MARCADOR_LOJA = '#16A34A';
 
 function formatarDistancia(km: number): string {
   return `${km.toFixed(1).replace('.', ',')} km`;
@@ -46,16 +55,21 @@ export function PontosRetiradaScreen() {
     tentarLocalizacaoDeNovo,
   } = usePontosRetirada();
 
+  // Se a loja falhar ou nao tiver coordenada, `loja` fica undefined/null e
+  // a tela simplesmente nao desenha o marcador.
+  const { data: loja } = useLocalizacaoLoja();
+
   const pontos = useMemo<PickupPoint[]>(() => data?.data ?? [], [data]);
 
   const mapaRef = useRef<MapView>(null);
   const [mapaPronto, setMapaPronto] = useState(false);
 
-  // Enquadra os pontos (e o usuario, se houver posicao) quando o mapa estiver pronto.
+  // Enquadra os pontos (mais a loja e o usuario, se houver) quando o mapa estiver pronto.
   useEffect(() => {
     if (!mapaPronto || pontos.length === 0) return;
 
     const coordenadas = pontos.map((p) => p.coordinate);
+    if (loja) coordenadas.push({ latitude: loja.latitude, longitude: loja.longitude });
     if (posicao) coordenadas.push(posicao);
 
     if (coordenadas.length === 1) {
@@ -69,7 +83,7 @@ export function PontosRetiradaScreen() {
         animated: false,
       });
     }
-  }, [mapaPronto, pontos, posicao]);
+  }, [mapaPronto, pontos, loja, posicao]);
 
   function focarNoPonto(ponto: PickupPoint) {
     mapaRef.current?.animateToRegion(
@@ -138,14 +152,23 @@ export function PontosRetiradaScreen() {
             }
           />
         ))}
-        {/* TODO (RF-46): marcador da loja. Falta confirmar de onde vem a coordenada. */}
+
+        {/* RF-46: a loja no mapa, com marcador proprio. */}
+        {loja && (
+          <Marker
+            coordinate={{ latitude: loja.latitude, longitude: loja.longitude }}
+            title={loja.nome}
+            description="Nossa loja"
+            pinColor={COR_MARCADOR_LOJA}
+          />
+        )}
       </MapView>
 
       {semPosicao && (
         <View style={estilos.aviso} accessibilityRole="alert">
           <Text style={estilos.avisoTexto}>
             {statusLocalizacao === 'negada'
-              ? 'Sem acesso a sua localizacao, mostramos os pontos na ordem de cadastro, sem a distancia.'
+              ? 'Sem acesso a sua localizacao, mostramos os pontos em ordem alfabetica, sem a distancia.'
               : 'Nao conseguimos obter sua posicao agora. Mostramos os pontos sem ordenar por distancia.'}
           </Text>
           <Pressable
