@@ -30,3 +30,12 @@ export interface DadosNotificacao {
   /** Qualquer campo novo que o servidor mandar cai aqui, sem quebrar nada. */
   [chave: string]: string | undefined;
 }
+
+/** Mensagem normalizada recebida de GET /push/messages. */
+export interface MensagemNotificacao {
+  id: string;
+  titulo: string;
+  corpo: string;
+  data: DadosNotificacao;
+  createdAt: string | null;
+}
