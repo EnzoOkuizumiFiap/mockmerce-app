@@ -1,259 +1,165 @@
 /**
- * ============================================================================
- * TELA DE CHECKOUT (SEMANA 3 - CheckoutScreen.tsx)
- * ============================================================================
- * 
- * Esta tela representa a etapa de revisão e fechamento da compra:
- * 1. Exibe os itens atuais do carrinho e o valor total acumulado.
- * 2. Permite ao usuário escolher o método de entrega (Receber em casa ou Retirar na loja).
- * 3. Gerencia a busca de pontos de retirada e geolocalização quando o modo de retirada é selecionado.
- * 4. Ao clicar em "Confirmar pedido", dispara a mutation `useCheckout()` enviando o ID do ponto de retirada (se aplicável).
- * 5. Após sucesso, substitui a tela de Checkout pela tela do Pedido gerado (`OrderScreen`).
- * 
- * 💡 Analogia: É a "esteira do caixa do supermercado" onde você confere as mercadorias
- * antes de o operador registrar a compra e emitir a comanda para pagamento.
+ * ---------------------------------------------------------------------------
+ * TELA: CHECKOUT
+ * ---------------------------------------------------------------------------
+ * Aqui o conteudo da aula ENCOSTA no fluxo de compra que ja vinha pronto: a
+ * escolha entre **receber em casa** e **retirar na loja**.
+ *
+ * A diferenca entre os dois e UM CAMPO no checkout:
+ *
+ *   sem pickupPointId  -> entrega
+ *   com pickupPointId  -> retirada (o pedido volta com `pickup` preenchido)
+ *
+ * Repare que a lista de pontos aqui e a MESMA da tela do mapa — mesmo hook,
+ * mesma ordenacao por distancia. Uma fonte de dados, dois lugares que a usam.
+ * ---------------------------------------------------------------------------
  */
-
 import { useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useCart } from '@/hooks/useCart';
-import { useCheckout } from '@/hooks/useOrderActions';
-import { usePickupPoints } from '@/hooks/usePickupPoints';
-import { LocationNotice } from '@/components/LocationNotice';
-import { PickupPointCard } from '@/components/PickupPointCard';
-import { money } from '@/lib/format';
-import { Button, Card, ErrorState, Loading } from '@/components/ui';
-import type { RootStackParamList } from '@/navigation';
-import type { ApiError } from '@/types/api';
-import { theme } from '@/lib/theme';
- 
-// Tipagem estrita das propriedades de navegação recebidas pelo React Navigation
-type Props = NativeStackScreenProps<RootStackParamList, 'Checkout'>;
+import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-type Delivery = 'DELIVERY' | 'PICKUP';
+import { ehAppError } from '../errors/AppError';
+import { useFinalizarCompra } from '../hooks/useCompra';
+import { usePontosRetirada } from '../hooks/usePontosRetirada';
+import { formatarPreco } from '../lib/formatar';
+import { cores } from '../lib/tema';
+import { AppStackParamList } from '../navigation/tipos';
+import { useCarrinho } from '../hooks/useCompra';
+
+type Props = NativeStackScreenProps<AppStackParamList, 'Checkout'>;
+
+type Entrega = 'ENTREGA' | 'RETIRADA';
 
 export function CheckoutScreen({ navigation }: Props) {
-  // 1. Busca os dados atuais do carrinho em cache / API
-  const { data: cart, isLoading, isError, error, refetch } = useCart();
-  
-  // 2. Hook de mutation para criar o pedido
-  const checkout = useCheckout();
- 
-  const [mode, setMode] = useState<Delivery>('DELIVERY');
-  const [pointId, setPointId] = useState<string | null>(null);
- 
-  // Só liga (e só pede permissão) quando a pessoa escolhe retirar na loja.
-  const pickup = usePickupPoints({ enabled: mode === 'PICKUP' });
- 
-  // Tratamento de estados de carregamento e erro da consulta do carrinho
-  if (isLoading) return <Loading label="Carregando carrinho…" />;
-  if (isError) return <ErrorState message={(error as ApiError).message} onRetry={() => refetch()} />;
- 
-  const items = cart?.items ?? [];
-  const vazio = items.length === 0;
-  const points = pickup.data?.data ?? [];
-  const missingPoint = mode === 'PICKUP' && !pointId;
- 
-  /**
-   * Dispara o fechamento do carrinho.
-   */
+  const { data: carrinho } = useCarrinho();
+  const { data: pontos, statusLocalizacao } = usePontosRetirada();
+  const finalizar = useFinalizarCompra();
+
+  const [modo, setModo] = useState<Entrega>('ENTREGA');
+  const [pontoEscolhido, setPontoEscolhido] = useState<string | null>(null);
+
+  const listaPontos = pontos?.data ?? [];
+
   function confirmar() {
-    const pickupPointId = mode === 'PICKUP' ? pointId ?? undefined : undefined;
-    checkout.mutate(pickupPointId, {
-      /**
-       * 💡 Por que usamos `navigation.replace` em vez de `navigation.navigate`?
-       * - `replace`: Substitui a tela atual na pilha de navegação.
-       * - Motivo: Uma vez que o carrinho foi transformado em pedido no backend,
-       *   ele deixa de existir. Não faz sentido permitir que o usuário clique em "Voltar"
-       *   e caia novamente na tela de checkout de um carrinho já finalizado!
-       */
-      onSuccess: (order) => navigation.replace('Order', { id: order.id }),
+    if (modo === 'RETIRADA' && !pontoEscolhido) {
+      Alert.alert('Escolha o ponto', 'Selecione onde voce quer retirar o pedido.');
+      return;
+    }
+
+    finalizar.mutate(modo === 'RETIRADA' ? pontoEscolhido! : undefined, {
+      onSuccess: (pedido) => navigation.replace('Pedido', { pedidoId: pedido.id }),
+      onError: (erro) =>
+        Alert.alert(
+          'Nao foi possivel fechar o pedido',
+          ehAppError(erro) ? erro.mensagem : 'Tente novamente.',
+        ),
     });
   }
- 
-  const pickupSection = (
-    <View style={styles.pickupBox}>
-      {pickup.isPending ? (
-        <View style={styles.inline}>
-          <ActivityIndicator color={theme.colors.primary} />
-          <Text style={styles.hint}>
-            {pickup.waitingLocation ? 'Obtendo sua localização…' : 'Buscando pontos de retirada…'}
-          </Text>
-        </View>
-      ) : pickup.isError ? (
-        <View style={styles.inline}>
-          <Text style={[styles.hint, { color: theme.colors.error }]}>
-            {(pickup.error as ApiError)?.message ?? 'Não foi possível carregar os pontos.'}
-          </Text>
-          <Button label="Tentar de novo" variant="ghost" onPress={() => pickup.refetch()} />
-        </View>
-      ) : points.length === 0 ? (
-        <Text style={styles.hint}>A loja ainda não tem pontos de retirada.</Text>
-      ) : (
-        <>
-          <LocationNotice
-            status={pickup.locationStatus}
-            canAskAgain={pickup.canAskAgain}
-            onRetry={pickup.retryLocation}
-          />
-          {points.map((point) => (
-            <PickupPointCard
-              key={point.id}
-              point={point}
-              selected={point.id === pointId}
-              onPress={() => setPointId(point.id)}
-            />
-          ))}
-        </>
-      )}
-    </View>
-  );
- 
-  const deliverySection = (
-    <View style={styles.delivery}>
-      <Text style={styles.section}>Como você quer receber?</Text>
-      <View style={styles.options}>
+
+  return (
+    <ScrollView style={e.container} contentContainerStyle={e.conteudo}>
+      <Text style={e.titulo}>Como voce quer receber?</Text>
+
+      <View style={e.opcoes}>
         <Pressable
-          style={[styles.option, mode === 'DELIVERY' && styles.optionActive]}
-          onPress={() => setMode('DELIVERY')}
+          style={[e.opcao, modo === 'ENTREGA' && e.opcaoAtiva]}
+          onPress={() => setModo('ENTREGA')}
         >
-          <Text style={[styles.optionText, mode === 'DELIVERY' && styles.optionTextActive]}>
+          <Text style={[e.opcaoTexto, modo === 'ENTREGA' && e.opcaoTextoAtivo]}>
             Receber em casa
           </Text>
         </Pressable>
+
         <Pressable
-          style={[styles.option, mode === 'PICKUP' && styles.optionActive]}
-          onPress={() => setMode('PICKUP')}
+          style={[e.opcao, modo === 'RETIRADA' && e.opcaoAtiva]}
+          onPress={() => setModo('RETIRADA')}
         >
-          <Text style={[styles.optionText, mode === 'PICKUP' && styles.optionTextActive]}>
+          <Text style={[e.opcaoTexto, modo === 'RETIRADA' && e.opcaoTextoAtivo]}>
             Retirar na loja
           </Text>
         </Pressable>
       </View>
-      {mode === 'PICKUP' ? pickupSection : null}
-    </View>
-  );
- 
-  return (
-    <View style={styles.container}>
-      {/* Lista de itens do pedido com cabeçalho e estado vazio */}
-      <FlatList
-        data={items}
-        keyExtractor={(it) => it.variantId} // Chave única por variante
-        contentContainerStyle={styles.list}
-        ListHeaderComponent={
-          <View style={styles.header}>
-            <Text style={styles.h}>Revise seu pedido</Text>
-            <Text style={styles.subHeader}>Confira os itens antes de gerar a cobrança</Text>
-          </View>
-        }
-        ListEmptyComponent={<Text style={styles.empty}>Seu carrinho está vazio.</Text>}
-        ListFooterComponent={vazio ? null : deliverySection}
-        renderItem={({ item }) => (
-          <Card style={styles.itemCard}>
-            <View style={styles.thumbBox}>
-              <View style={styles.thumbSpine} />
-              <Text style={{ fontSize: 20 }}>📖</Text>
-            </View>
-            <View style={styles.itemInfo}>
-              <Text style={styles.name} numberOfLines={2}>
-                {item.quantity}× {item.name}
-              </Text>
-              <Text style={styles.unitInfo}>Unitário: {money(item.unitPrice)}</Text>
-            </View>
-            {/* Formata o subtotal monetário para o padrão Real (R$ 0,00) */}
-            <Text style={styles.sub}>{money(item.subtotal)}</Text>
-          </Card>
-        )}
-      />
- 
-      {/* Rodapé fixo com total e botão de confirmação */}
-      <View style={styles.stickyFooter}>
-        <View style={styles.totalRow}>
-          <View>
-            <Text style={styles.totalLabel}>Total do Pedido</Text>
-            <Text style={styles.totalCount}>
-              {items.length} {items.length === 1 ? 'item' : 'itens'}
-            </Text>
-          </View>
-          <Text style={styles.total}>{money(cart?.total ?? 0)}</Text>
+
+      {modo === 'RETIRADA' ? (
+        <View style={e.pontos}>
+          {listaPontos.length === 0 ? (
+            <Text style={e.aviso}>Esta loja ainda nao tem pontos de retirada.</Text>
+          ) : (
+            <>
+              {/* O aviso so aparece quando a ordenacao NAO pode acontecer. */}
+              {statusLocalizacao !== 'ok' ? (
+                <Text style={e.aviso}>
+                  Sem sua localizacao, os pontos aparecem em ordem alfabetica.
+                </Text>
+              ) : null}
+
+              {listaPontos.map((ponto) => {
+                const escolhido = ponto.id === pontoEscolhido;
+                return (
+                  <Pressable
+                    key={ponto.id}
+                    style={[e.ponto, escolhido && e.pontoEscolhido]}
+                    onPress={() => setPontoEscolhido(ponto.id)}
+                  >
+                    <View style={e.pontoTopo}>
+                      <Text style={e.pontoNome}>{ponto.name}</Text>
+                      {ponto.distanceKm !== null ? (
+                        <Text style={e.pontoDistancia}>{ponto.distanceKm} km</Text>
+                      ) : null}
+                    </View>
+                    {ponto.hours ? <Text style={e.pontoHorario}>{ponto.hours}</Text> : null}
+                  </Pressable>
+                );
+              })}
+            </>
+          )}
         </View>
- 
-        {missingPoint ? <Text style={styles.hint}>Escolha o ponto onde você vai retirar o pedido.</Text> : null}
- 
-        {/* Exibe mensagem de erro caso o backend recuse o checkout (ex: estoque esgotado) */}
-        {checkout.isError && <Text style={styles.erro}>{(checkout.error as ApiError).message}</Text>}
- 
-        {/* Botão de confirmação com feedback de carregamento da mutation */}
-        <Button
-          label={checkout.isPending ? 'Criando pedido…' : 'Confirmar pedido'}
-          onPress={confirmar}
-          disabled={vazio || checkout.isPending || missingPoint} // Desativa se o carrinho estiver vazio, criando ou faltando selecionar ponto
-        />
-      </View>
-    </View>
+      ) : null}
+
+      {carrinho ? (
+        <View style={e.resumo}>
+          <Text style={e.resumoRotulo}>Total</Text>
+          <Text style={e.resumoValor}>{formatarPreco(carrinho.total)}</Text>
+        </View>
+      ) : null}
+
+      <Pressable style={e.botao} onPress={confirmar} disabled={finalizar.isPending}>
+        {finalizar.isPending ? (
+          <ActivityIndicator color="#FFF" />
+        ) : (
+          <Text style={e.botaoTexto}>Confirmar pedido</Text>
+        )}
+      </Pressable>
+    </ScrollView>
   );
 }
- 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: theme.colors.light },
-  list: { padding: 14, gap: 10, paddingBottom: 24 },
-  header: { marginBottom: 8, gap: 2 },
-  h: { fontSize: 20, fontWeight: '800', color: theme.colors.dark },
-  subHeader: { fontSize: 13, color: theme.colors.greyDark, marginBottom: 6 },
-  itemCard: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: theme.radius.lg },
-  thumbBox: {
-    width: 48,
-    height: 48,
-    borderRadius: theme.radius.sm,
-    backgroundColor: theme.colors.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-    overflow: 'hidden',
+
+const e = StyleSheet.create({
+  container: { flex: 1, backgroundColor: cores.fundo },
+  conteudo: { padding: 16, gap: 12 },
+  titulo: { fontSize: 17, fontWeight: '700', color: cores.textoForte },
+  opcoes: { flexDirection: 'row', gap: 8 },
+  opcao: {
+    flex: 1, padding: 14, borderRadius: 10, borderWidth: 1.5,
+    borderColor: cores.borda, backgroundColor: cores.superficie, alignItems: 'center',
   },
-  thumbSpine: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 5, backgroundColor: theme.colors.primary },
-  itemInfo: { flex: 1, gap: 2 },
-  name: { fontSize: 14, fontWeight: '700', color: theme.colors.dark },
-  unitInfo: { fontSize: 11, color: theme.colors.greyDark },
-  sub: { fontSize: 14, fontWeight: '800', color: theme.colors.primaryDark },
-  empty: { color: theme.colors.greyDark, textAlign: 'center', marginTop: 40, fontSize: 14 },
- 
-  delivery: { marginTop: 14, gap: 10 },
-  section: { fontSize: 16, fontWeight: '800', color: theme.colors.dark },
-  options: { flexDirection: 'row', gap: 8 },
-  option: {
-    flex: 1,
-    padding: 14,
-    borderRadius: theme.radius.md,
-    borderWidth: 1.5,
-    borderColor: theme.colors.greyLight,
-    backgroundColor: theme.colors.white,
-    alignItems: 'center',
+  opcaoAtiva: { borderColor: cores.primaria, backgroundColor: cores.primariaClara },
+  opcaoTexto: { fontSize: 14, color: cores.texto, fontWeight: '500' },
+  opcaoTextoAtivo: { color: cores.primariaEscura, fontWeight: '700' },
+  pontos: { gap: 8 },
+  aviso: { fontSize: 12, color: cores.textoFraco, fontStyle: 'italic' },
+  ponto: {
+    padding: 14, borderRadius: 10, borderWidth: 1.5,
+    borderColor: cores.borda, backgroundColor: cores.superficie, gap: 2,
   },
-  optionActive: { borderColor: theme.colors.primary, backgroundColor: theme.colors.primaryLight },
-  optionText: { fontSize: 14, fontWeight: '600', color: theme.colors.dark },
-  optionTextActive: { color: theme.colors.primaryDark, fontWeight: '800' },
-  pickupBox: { gap: 8 },
-  inline: { gap: 8 },
-  hint: { fontSize: 13, color: theme.colors.greyDark, textAlign: 'center' },
- 
-  stickyFooter: {
-    backgroundColor: theme.colors.white,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: 20,
-    gap: 14,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    elevation: 8,
-  },
-  totalRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  totalLabel: { fontSize: 16, fontWeight: '800', color: theme.colors.dark },
-  totalCount: { fontSize: 12, color: theme.colors.greyDark, marginTop: 1 },
-  total: { fontSize: 22, fontWeight: '800', color: theme.colors.primaryDark },
-  erro: { color: theme.colors.error, fontSize: 13, textAlign: 'center' },
+  pontoEscolhido: { borderColor: cores.primaria, backgroundColor: cores.primariaClara },
+  pontoTopo: { flexDirection: 'row', justifyContent: 'space-between', gap: 8 },
+  pontoNome: { fontSize: 15, fontWeight: '600', color: cores.textoForte, flexShrink: 1 },
+  pontoDistancia: { fontSize: 12, color: cores.primariaEscura, fontWeight: '600' },
+  pontoHorario: { fontSize: 12, color: cores.textoFraco },
+  resumo: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 },
+  resumoRotulo: { fontSize: 16, color: cores.texto },
+  resumoValor: { fontSize: 20, fontWeight: '700', color: cores.textoForte },
+  botao: { backgroundColor: cores.primaria, borderRadius: 10, padding: 16, alignItems: 'center', marginTop: 8 },
+  botaoTexto: { color: '#FFF', fontSize: 16, fontWeight: '600' },
 });
