@@ -27,33 +27,40 @@ const TITULO: Record<string, string> = {
 };
 
 export function CartaoNotificacoes() {
-  const { status, token, motivo, tentarNovamente } = useNotificacoes();
+  const { status, motivo, podeSolicitar, ativar, tentarNovamente, abrirConfiguracoes } = useNotificacoes();
 
   const ok = status === 'concedida';
+  const carregando = status === 'verificando';
 
   return (
     <View style={[e.cartao, ok ? e.cartaoOk : e.cartaoAviso]}>
       <Text style={e.titulo}>{TITULO[status]}</Text>
+      <Text style={e.descricao}>
+        Receba avisos sobre novidades e mensagens da loja. Você pode continuar usando o Mockmerce se não quiser ativar.
+      </Text>
+      {motivo && <Text accessibilityLiveRegion="polite" style={e.motivo}>{motivo}</Text>}
 
-      {ok && token && (
-        <>
-          <Text style={e.legenda}>Token deste aparelho no Firebase</Text>
-          {/*
-            So o comeco e o fim. O token inteiro tem ~160 caracteres e nao
-            cabe na tela — e o que interessa aqui e poder comparar com o que
-            o painel da loja mostra.
-          */}
-          <Text style={e.token}>
-            {token.slice(0, 12)}...{token.slice(-6)}
-          </Text>
-        </>
+      {!carregando && !ok && status === 'nao-solicitada' && (
+        <Pressable style={e.botao} onPress={() => void ativar()} accessibilityRole="button">
+          <Text style={e.textoBotao}>Ativar notificações</Text>
+        </Pressable>
       )}
 
-      {motivo && <Text style={e.motivo}>{motivo}</Text>}
+      {!carregando && !ok && status === 'negada' && (
+        <Pressable
+          style={e.botao}
+          onPress={() => void (podeSolicitar ? tentarNovamente() : abrirConfiguracoes())}
+          accessibilityRole="button"
+        >
+          <Text style={e.textoBotao}>
+            {podeSolicitar ? 'Tentar novamente' : 'Abrir configurações'}
+          </Text>
+        </Pressable>
+      )}
 
-      {!ok && status !== 'verificando' && (
-        <Pressable style={e.botao} onPress={tentarNovamente} accessibilityRole="button">
-          <Text style={e.textoBotao}>Tentar de novo</Text>
+      {ok && (
+        <Pressable style={e.botao} onPress={() => void tentarNovamente()} accessibilityRole="button">
+          <Text style={e.textoBotao}>Sincronizar agora</Text>
         </Pressable>
       )}
     </View>
@@ -67,17 +74,16 @@ const e = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     borderWidth: 1,
-    gap: 4,
+    gap: 6,
   },
   cartaoOk: { borderColor: cores.primaria, backgroundColor: `${cores.primaria}12` },
   cartaoAviso: { borderColor: cores.borda, backgroundColor: cores.fundo },
   titulo: { fontSize: 15, fontWeight: '700', color: cores.textoForte },
-  legenda: { fontSize: 12, color: cores.textoFraco, marginTop: 8 },
-  token: { fontSize: 13, color: cores.textoForte, fontVariant: ['tabular-nums'] },
+  descricao: { fontSize: 13, color: cores.textoFraco, lineHeight: 18 },
   motivo: { fontSize: 13, color: cores.textoFraco, marginTop: 4, lineHeight: 18 },
   botao: {
     alignSelf: 'flex-start',
-    marginTop: 12,
+    marginTop: 8,
     borderWidth: 1.5,
     borderColor: cores.primaria,
     paddingVertical: 8,

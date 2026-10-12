@@ -11,6 +11,7 @@ import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
 import { cores } from './tema';
+import { MensagemNotificacao } from '../types/notificacao';
 
 /**
  * O id do canal precisa ser IGUAL ao que o servidor manda em
@@ -18,7 +19,7 @@ import { cores } from './tema';
  * padrao dele e ignora o som e a prioridade que voce configurou aqui — a
  * notificacao chega, mas muda e sem prioridade, e ninguem entende por que.
  */
-export const CANAL_PADRAO = 'default';
+export const CANAL_PADRAO = 'mockmerce-notificacoes';
 
 /**
  * O QUE ACONTECE COM O APP ABERTO.
@@ -62,9 +63,28 @@ export async function prepararCanalAndroid(): Promise<void> {
 
   await Notifications.setNotificationChannelAsync(CANAL_PADRAO, {
     name: 'Avisos da loja',
-    description: 'Queda de preco dos produtos que voce salvou, status de pedido e novidades.',
+    description: 'Novidades sobre os livros da loja.',
     importance: Notifications.AndroidImportance.HIGH,
     vibrationPattern: [0, 250, 250, 250],
     lightColor: cores.primaria,
+  });
+}
+
+/** Apresenta uma mensagem do histórico como notificação local. */
+export async function exibirNotificacaoLocal(
+  mensagem: MensagemNotificacao,
+): Promise<void> {
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title: mensagem.titulo,
+      body: mensagem.corpo,
+      sound: true,
+      data: {
+        ...mensagem.data,
+        mensagemId: mensagem.id,
+        ...(mensagem.createdAt ? { createdAt: mensagem.createdAt } : {}),
+      },
+    },
+    trigger: null,
   });
 }
