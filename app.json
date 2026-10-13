@@ -6,10 +6,6 @@
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
-    "splash": {
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "br.com.fiap.livroaberto",
@@ -28,17 +24,9 @@
         "ACCESS_FINE_LOCATION",
         "READ_MEDIA_IMAGES"
       ],
-      "config": {
-        "googleMaps": {
-          "apiKey": "COLE_A_CHAVE_DO_GOOGLE_MAPS_AQUI"
-        }
-      }
-    },
-    "web": {
-      "bundler": "metro"
+      "googleServicesFile": "./google-services.json"
     },
     "plugins": [
-      "expo-secure-store",
       [
         "expo-location",
         {
@@ -49,6 +37,13 @@
         "expo-image-picker",
         {
           "photosPermission": "Precisamos acessar suas fotos para você anexar imagens às avaliações."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#7C3AED",
+          "defaultChannel": "default"
         }
       ]
     ]

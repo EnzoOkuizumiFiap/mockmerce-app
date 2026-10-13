@@ -18,7 +18,7 @@ import { cores } from './tema';
  * padrao dele e ignora o som e a prioridade que voce configurou aqui — a
  * notificacao chega, mas muda e sem prioridade, e ninguem entende por que.
  */
-export const CANAL_PADRAO = 'livro-aberto-notificacoes';
+export const CANAL_PADRAO = 'default';
 
 /**
  * O QUE ACONTECE COM O APP ABERTO.
@@ -60,7 +60,17 @@ Notifications.setNotificationHandler({
 export async function prepararCanalAndroid(): Promise<void> {
   if (Platform.OS !== 'android') return;
 
+  // Canal padrão exigido pelo Expo e pelo backend da turma
   await Notifications.setNotificationChannelAsync(CANAL_PADRAO, {
+    name: 'Avisos da loja',
+    description: 'Queda de preco dos produtos que voce salvou, status de pedido e novidades.',
+    importance: Notifications.AndroidImportance.HIGH,
+    vibrationPattern: [0, 250, 250, 250],
+    lightColor: cores.primaria,
+  });
+
+  // Canal alternativo registrado por precaução caso enviado explicitamente
+  await Notifications.setNotificationChannelAsync('livro-aberto-notificacoes', {
     name: 'Avisos da loja',
     description: 'Novidades sobre os livros da loja.',
     importance: Notifications.AndroidImportance.HIGH,
