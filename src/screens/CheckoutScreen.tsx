@@ -19,12 +19,11 @@ import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { ehAppError } from '../errors/AppError';
-import { useFinalizarCompra } from '../hooks/useCompra';
+import { useCarrinho, useFinalizarCompra } from '../hooks/useCompra';
 import { usePontosRetirada } from '../hooks/usePontosRetirada';
 import { formatarPreco } from '../lib/formatar';
 import { cores } from '../lib/tema';
 import { AppStackParamList } from '../navigation/tipos';
-import { useCarrinho } from '../hooks/useCompra';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'Checkout'>;
 
@@ -32,7 +31,7 @@ type Entrega = 'ENTREGA' | 'RETIRADA';
 
 export function CheckoutScreen({ navigation }: Props) {
   const { data: carrinho } = useCarrinho();
-  const { data: pontos, statusLocalizacao } = usePontosRetirada();
+  const { data: pontos, isPending: carregandoPontos, statusLocalizacao } = usePontosRetirada();
   const finalizar = useFinalizarCompra();
 
   const [modo, setModo] = useState<Entrega>('ENTREGA');
@@ -82,7 +81,9 @@ export function CheckoutScreen({ navigation }: Props) {
 
       {modo === 'RETIRADA' ? (
         <View style={e.pontos}>
-          {listaPontos.length === 0 ? (
+          {carregandoPontos ? (
+            <ActivityIndicator color={cores.primaria} style={{ marginVertical: 16 }} />
+          ) : listaPontos.length === 0 ? (
             <Text style={e.aviso}>Esta loja ainda nao tem pontos de retirada.</Text>
           ) : (
             <>

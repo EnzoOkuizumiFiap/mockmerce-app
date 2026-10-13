@@ -13,6 +13,7 @@ import { cores } from '../lib/tema';
 import { ProdutoResumo } from '../types/produto';
 import { BotaoFavorito } from './BotaoFavorito';
 import { Pressionavel } from './Pressionavel';
+import { useAnimacoes } from '../contexts/AnimacoesContext';
 
 type Props = {
   produto: ProdutoResumo;
@@ -40,6 +41,8 @@ type Props = {
 const ATRASO_MAXIMO = 300;
 
 export function CardProduto({ produto, aoPressionar, ehFavorito, aoFavoritar, indice = 0 }: Props) {
+  const { animacoesAtivas } = useAnimacoes();
+
   return (
     /**
      * `entering` e a animacao declarativa de ENTRADA: o Reanimated a executa
@@ -47,7 +50,7 @@ export function CardProduto({ produto, aoPressionar, ehFavorito, aoFavoritar, in
      * "apareceu/sumiu" ela resolve quase tudo.
      */
     <Animated.View
-      entering={FadeInDown.delay(Math.min(indice * 40, ATRASO_MAXIMO)).duration(260)}
+      entering={animacoesAtivas ? FadeInDown.delay(Math.min(indice * 40, ATRASO_MAXIMO)).duration(260) : undefined}
       /**
        * `exiting` roda quando o item SAI da lista — e o que torna "remover
        * dos favoritos" legivel: o card desliza para fora em vez de sumir.
@@ -59,8 +62,8 @@ export function CardProduto({ produto, aoPressionar, ehFavorito, aoFavoritar, in
        * (Em tutorial antigo isto aparece como `Layout`; o nome atual e
        * `LinearTransition`.)
        */
-      exiting={FadeOutRight.duration(200)}
-      layout={LinearTransition.springify().damping(18)}
+      exiting={animacoesAtivas ? FadeOutRight.duration(200) : undefined}
+      layout={animacoesAtivas ? LinearTransition.springify().damping(18) : undefined}
     >
       <Pressionavel style={e.card} onPress={() => aoPressionar(produto.id)}>
       {/* `image` pode ser null: produto cadastrado sem foto. Um <Image> com

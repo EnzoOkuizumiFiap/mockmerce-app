@@ -1,4 +1,4 @@
-# 📖 Livro Aberto — E-commerce Mobile (Checkpoint 4)
+# 📖 Livro Aberto — E-commerce Mobile (Checkpoint 5: A loja que responde)
 
 > **Aplicativo mobile de e-commerce desenvolvido em React Native, Expo, TypeScript e TanStack Query, conectado ao backend Mockmerce da FIAP.**
 
@@ -165,3 +165,71 @@ Para avaliação do corretor, utilize o usuário de teste já registrado na noss
    * Em conformidade com o edital do projeto acadêmico, o fluxo de pagamento opera em modo simulado através do parâmetro `simulate: 'approve' | 'decline'`, não realizando cobrança real em operadoras de cartão.
 2. **Dependência de Conexão Ativa no Primeiro Boot:**
    * Embora o cache do TanStack Query mantenha dados em memória durante o uso, a autenticação inicial e a primeira carga de produtos requerem conexão à internet para sincronização com a API central da FIAP.
+3. **Push Remoto no Emulador/Ambiente:**
+   * Por exigência da arquitetura nativa do Firebase FCM e do SDK 54/57 da Expo, o push remoto não funciona no Expo Go genérico. Exige o build de desenvolvimento gerado (`npx expo run:android`) em aparelho físico ou emulador com imagem Google Play Store.
+
+---
+
+## 🔔 11. Notificações: Escolha do Caminho A (Push Real via Firebase FCM)
+
+Para o Checkpoint 5, o grupo optou pelo **Caminho A: Push Real via FCM (+5 pontos de bônus)**:
+
+* **Por que o Caminho A:** Optamos pelo transporte real de notificações para reproduzir a arquitetura completa de produção. O backend da FIAP se comunica diretamente com a API do Google Firebase (FCM v1) e despacha a mensagem de queda de preço para os aparelhos que salvaram aquele produto nos favoritos.
+* **Credenciais no Painel:** A chave privada da Conta de Serviço do Firebase (`firebase-adminsdk-fbsvc@mockmerce.iam.gserviceaccount.com`) foi autenticada no painel web da turma (`aluno-admin-web`) em **Push → Credencial**, permitindo que o servidor da FIAP autentique com o Google sem expor nenhuma chave secreta no repositório.
+* **Ciclo de Registro do Aparelho (RF-57):**
+  * O app obtém o token nativo do FCM via `Notifications.getDevicePushTokenAsync()`.
+  * Ao fazer login ou abrir o app, o token é registrado em `POST /customers/me/devices`.
+  * No logout, o aparelho é imediatamente removido via `DELETE /customers/me/devices/:token` **antes** de apagar o token de autenticação local da sessão, garantindo que usuários que saíram da conta não recebam notificações da conta anterior.
+* **Deep Linking (RF-59):** O toque na notificação é capturado tanto em primeiro/segundo plano quanto em cold start (`Notifications.getLastNotificationResponseAsync()`), navegando instantaneamente para a tela do produto através do payload `data.produtoId`.
+* **Degradação Elegante (RF-60):** Caso a permissão seja negada ou o dispositivo não possua Google Play Services, o app continua 100% funcional, e a tela de Perfil explica o estado com clareza.
+
+---
+
+## 🎬 12. Defesa do Movimento e Acessibilidade (RF-49 a RF-55 e RF-62)
+
+O design de movimento do app segue uma disciplina estrita de física e intencionalidade: **o movimento nunca é mero enfeite, ele serve como confirmação e feedback de ações**.
+
+### 1. Vocabulário Centralizado (`src/lib/animacoes.ts` - RF-62)
+Todas as durações, curvas e molas estão centralizadas no arquivo único `src/lib/animacoes.ts`:
+* `DURACAO.rapida` (140ms): Microinterações táteis de toque.
+* `DURACAO.media` (250ms): Transições de estado e entrada de conteúdo.
+* `MOLA_TOQUE`: Mola rápida (`damping: 12, stiffness: 220, mass: 0.5`) para sensação de toque responsivo.
+* `MOLA_SUAVE`: Mola amortecida para acomodação de layouts.
+
+### 2. Animações Mantidas e Critérios
+* **Resposta ao Toque com Mola (`<Pressionavel />` - RF-49):** Botões e cards utilizam `useSharedValue` e `useAnimatedStyle` na UI thread, encolhendo suavemente para `0.96` ao tocar. Evita cliques duplicados em compras.
+* **Confirmação sem Navegação (`<BotaoFavorito />` - RF-50):** Favoritar não navega nem abre alerta. O botão dá um pulo elástico (`withSequence` crescendo para 1.35 e voltando com mola) apenas ao ativar, confirmando visualmente a gravação do favorito.
+* **Entrada Escalonada com Teto (`<CardProduto />` - RF-51):** Os itens entram com `FadeInDown` escalonados a cada 40ms, com teto rigoroso de 300ms (`ATRASO_MAXIMO`). Isso impede que produtos no fim da lista demorem para aparecer.
+* **Saída e Acomodação em Listas (`<CardProduto />` - RF-52):** Ao desfavoritar um livro na tela de Favoritos, o card sai deslizando para a direita com `FadeOutRight`, enquanto os cards restantes sobem suavemente com `LinearTransition.springify()`.
+* **Sinal de Vida no Carregamento (`<EstadoCarregando />` - RF-53):** Além do `ActivityIndicator` nativo, o texto pulsa opacidade continuamente entre 0.35 e 1.0 a cada 700ms, assegurando que o app não congelou.
+
+### 3. Acessibilidade e Constante de Desligamento (RF-54 e RF-55)
+* **Constante Global de Código (RF-55):** Definimos a constante `export const ANIMACOES_ATIVADAS = true` em `src/lib/animacoes.ts` para conformidade estrita com o critério de avaliação de código.
+* **Controle em Tempo de Execução no Perfil (Linha 240 do Checklist):** Adicionamos um controle dedicado no perfil (`<CartaoAnimacoes />`) com botão e Switch para ligar/desligar todas as animações dinamicamente no app, facilitando a gravação do vídeo de demonstração sem exigir alteração de código ou rebuild.
+* **Reduzir Movimento do Sistema (RF-54):** O aplicativo escuta `AccessibilityInfo.isReduceMotionEnabled()` e o evento `reduceMotionChanged`. Quando o usuário ativa a opção no sistema operacional, o movimento é desativado automaticamente.
+* **Comportamento sem Animações (Feedback Preservado):** Quando as animações estão desligadas (seja pela constante, pelo perfil ou pela acessibilidade do SO):
+  * `<Pressionavel />` substitui a mola de encolhimento por uma sutil redução de opacidade (`0.75`) enquanto pressionado, garantindo que nada fique sem feedback tátil.
+  * `<BotaoFavorito />` alterna o preenchimento da estrela imediatamente, sem o salto elástico.
+  * `<CardProduto />` renderiza sem atraso escalonado e sem transição de mola.
+  * `<EstadoCarregando />` mantém o `ActivityIndicator` nativo com texto estático sem pulso de opacidade.
+  * O app continua 100% fluido e usável em todas as telas.
+
+---
+
+## 📍 13. Localização e Pontos de Retirada (RF-43 a RF-48)
+
+* **Três Desfechos Tratados (RF-43):** Concedida (calcula distâncias), Negada (lista alfabética sem distância) e Concedida sem Posição/Erro (alerta discreto com botão de tentar novamente).
+* **Ordenação e Distância (RF-44 e RF-45):** Com o GPS ativo, a rota `GET /pickup-points?latitude=...&longitude=...` retorna os pontos ordenados por proximidade com o badge de quilometragem (`1.58 km de você`).
+* **Google Maps Integrado (RF-46):** Integração com `react-native-maps` exibindo os pins dos pontos de retirada e a localização do usuário com marcador azul. As chaves de API da Google Maps Platform são mantidas com segurança fora do repositório através de injeção dinâmica no `app.config.js` via `.env`.
+* **Retirada no Checkout (RF-47 e RF-48):** Seleção ágil entre entrega domiciliar e retirada na loja no checkout, salvando o `pickupPointId` no pedido final.
+
+---
+
+## ⭐ 14. Avaliações com Foto e Validação Prévia (RF-35 a RF-42)
+
+* **Média do Produto sem Requisição Extra (RF-35):** Exibida diretamente a partir do objeto `rating` do produto (`GET /products/:id`), sem baixar a lista inteira de avaliações.
+* **Consulta Prévia com `can-review` (RF-37):** Antes de abrir o formulário, o app consulta `GET /products/:id/reviews/can-review`. Clientes que não compraram o produto ou que já avaliaram recebem a explicação contextual e amigável da regra de negócio.
+* **Upload Multipart com Boundary Dinâmico (RF-39):** O upload da imagem para `POST /uploads` nunca fixa o cabeçalho `Content-Type: multipart/form-data` na mão, permitindo que a camada de rede do React Native gere o boundary correto.
+* **Degradação de Permissão de Fotos (RF-40):** Caso a permissão da galeria seja recusada, a avaliação pode ser enviada normalmente apenas com nota e texto.
+* **Invalidação Cirúrgica de Cache (RF-41):** Após enviar a avaliação, a mutation invalida tanto a lista de avaliações quanto o cache do produto, atualizando a média de estrelas imediatamente na tela.
+

@@ -20,6 +20,7 @@ import { StatusBar } from 'expo-status-bar';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { AnimacoesProvider } from './src/contexts/AnimacoesContext';
 import { AuthProvider } from './src/contexts/AuthContext';
 import { FavoritosProvider } from './src/contexts/FavoritosContext';
 import { NotificacoesProvider } from './src/contexts/NotificacoesContext';
@@ -29,16 +30,18 @@ import { RootNavigator } from './src/navigation/RootNavigator';
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <FavoritosProvider>
-          <NotificacoesProvider>
-            <SafeAreaProvider>
-              <StatusBar style="light" />
-              <RootNavigator />
-            </SafeAreaProvider>
-          </NotificacoesProvider>
-        </FavoritosProvider>
-      </AuthProvider>
+      <AnimacoesProvider>
+        <AuthProvider>
+          <FavoritosProvider>
+            <NotificacoesProvider>
+              <SafeAreaProvider>
+                <StatusBar style="light" />
+                <RootNavigator />
+              </SafeAreaProvider>
+            </NotificacoesProvider>
+          </FavoritosProvider>
+        </AuthProvider>
+      </AnimacoesProvider>
     </QueryClientProvider>
   );
 }

@@ -56,7 +56,7 @@ export function PontosRetiradaScreen() {
     tentarLocalizacaoNovamente,
   } = usePontosRetirada();
 
-  const pontos = data?.data ?? [];
+  const pontos = useMemo(() => data?.data ?? [], [data?.data]);
 
   /**
    * A regiao inicial do mapa.

@@ -23,7 +23,7 @@ import { apagarSeguro, guardarSeguro, lerSeguro } from '../storage/armazenamento
 import { CHAVES, CHAVES_SEGURAS } from '../storage/chavesArmazenamento';
 import { registrarAoExpirar } from '../storage/sessaoExpirada';
 import { Credenciais, NovoCliente, RespostaLogin, Usuario } from '../types/usuario';
-import { obterTokenAtual } from './NotificacoesContext';
+import { obterTokenAtual } from '../lib/pushToken';
 import { removerAparelho } from '../services/notificacoesService';
 
 type AuthContextValor = {

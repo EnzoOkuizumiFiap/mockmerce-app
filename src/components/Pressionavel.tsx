@@ -28,7 +28,8 @@ import { ReactNode } from 'react';
 import { Pressable, PressableProps, StyleProp, ViewStyle } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
-import { ESCALA_PRESSIONADO, MOLA_TOQUE } from '../lib/animacoes';
+import { ESCALA_PRESSIONADO, MOLA_TOQUE, ANIMACOES_ATIVADAS } from '../lib/animacoes';
+import { useAnimacoes } from '../contexts/AnimacoesContext';
 
 const AreaAnimada = Animated.createAnimatedComponent(Pressable);
 
@@ -40,12 +41,15 @@ type Props = PressableProps & {
 };
 
 export function Pressionavel({ children, style, semAnimacao, ...resto }: Props) {
+  const { animacoesAtivas } = useAnimacoes();
   /**
    * Um `sharedValue` e um valor que existe nas DUAS threads e fica
    * sincronizado. Repare que se le e escreve por `.value` — e que mudar isso
    * nao causa render nenhum.
    */
   const escala = useSharedValue(1);
+
+  const desativar = semAnimacao || !ANIMACOES_ATIVADAS || !animacoesAtivas;
 
   /**
    * ESTA FUNCAO E UM WORKLET.
@@ -64,11 +68,13 @@ export function Pressionavel({ children, style, semAnimacao, ...resto }: Props) 
       {...resto}
       style={[style, estiloAnimado]}
       onPressIn={(evento) => {
-        if (!semAnimacao) escala.value = withSpring(ESCALA_PRESSIONADO, MOLA_TOQUE);
+        // eslint-disable-next-line react-hooks/immutability
+        if (!desativar) escala.value = withSpring(ESCALA_PRESSIONADO, MOLA_TOQUE);
         resto.onPressIn?.(evento);
       }}
       onPressOut={(evento) => {
-        if (!semAnimacao) escala.value = withSpring(1, MOLA_TOQUE);
+        // eslint-disable-next-line react-hooks/immutability
+        if (!desativar) escala.value = withSpring(1, MOLA_TOQUE);
         resto.onPressOut?.(evento);
       }}
     >

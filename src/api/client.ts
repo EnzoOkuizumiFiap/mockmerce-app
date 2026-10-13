@@ -33,6 +33,7 @@ import { lerSeguro } from '../storage/armazenamentoSeguro';
 import { CHAVES_SEGURAS } from '../storage/chavesArmazenamento';
 import { notificarSessaoExpirada } from '../storage/sessaoExpirada';
 
+// eslint-disable-next-line import/no-named-as-default-member
 export const api: AxiosInstance = axios.create({
   baseURL: config.urlBase,
 

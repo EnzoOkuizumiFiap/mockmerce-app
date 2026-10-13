@@ -53,27 +53,42 @@ export function useLocalizacao() {
         return;
       }
 
-      const lida = await Location.getCurrentPositionAsync({
-        /**
-         * `Balanced` = ~100 m de precisao, resposta rapida, pouca bateria.
-         * Para "qual loja e a mais perto" isso basta e sobra; `High` liga o
-         * GPS de verdade e pode demorar segundos dentro de um predio.
-         */
-        accuracy: Location.Accuracy.Balanced,
-      });
+      // Tenta obter a posição atual
+      let lida: Location.LocationObject | null = null;
+      try {
+        lida = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+          mayShowUserSettingsDialog: true,
+        });
+      } catch (erroCurrent) {
+        console.warn('[localizacao] Tentando com menor precisão para emulador:', erroCurrent);
+        try {
+          lida = await Location.getCurrentPositionAsync({
+            accuracy: Location.Accuracy.Lowest,
+          });
+        } catch {
+          lida = await Location.getLastKnownPositionAsync();
+        }
+      }
+
+      if (!lida) {
+        throw new Error('Nenhuma coordenada disponível no momento');
+      }
 
       setPosicao({
         latitude: lida.coords.latitude,
         longitude: lida.coords.longitude,
       });
       setStatus('ok');
-    } catch {
+    } catch (erro) {
+      console.warn('[localizacao] Falha geral ao obter localização:', erro);
       // Permissao concedida mas leitura falhou (caso 3 la de cima).
       setStatus('erro');
     }
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     obter();
   }, [obter]);
 

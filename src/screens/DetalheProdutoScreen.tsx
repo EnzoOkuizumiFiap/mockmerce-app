@@ -8,9 +8,9 @@
  * ---------------------------------------------------------------------------
  */
 import { useMemo } from 'react';
-import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-
+import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { EstadoCarregando } from '../components/EstadoCarregando';
 import { EstadoErro } from '../components/EstadoErro';
 import { Estrelas } from '../components/Estrelas';
@@ -19,10 +19,9 @@ import { useFavoritos } from '../contexts/FavoritosContext';
 import { ehAppError } from '../errors/AppError';
 import { useAdicionarAoCarrinho } from '../hooks/useCompra';
 import { useProduto } from '../hooks/useProdutos';
-import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
-
 import { PrecoAnimado } from '../components/PrecoAnimado';
 import { Pressionavel } from '../components/Pressionavel';
+import { useAnimacoes } from '../contexts/AnimacoesContext';
 import { formatarFaixaDePreco, formatarPreco } from '../lib/formatar';
 import { resumoDeDetalhe } from '../lib/produto';
 import { cores } from '../lib/tema';
@@ -32,6 +31,7 @@ type Props = NativeStackScreenProps<AppStackParamList, 'DetalheProduto'>;
 
 export function DetalheProdutoScreen({ route, navigation }: Props) {
   const { id } = route.params;
+  const { animacoesAtivas } = useAnimacoes();
 
   // A chave de cache inclui o id (ver hooks/useProdutos.ts). Sem isso, abrir
   // o segundo produto mostraria o primeiro, vindo do cache.
@@ -77,7 +77,11 @@ export function DetalheProdutoScreen({ route, navigation }: Props) {
         que a troca de tela merece.
       */}
       {principal ? (
-        <Animated.Image entering={FadeIn.duration(300)} source={{ uri: principal.url }} style={e.imagem} />
+        <Animated.Image
+          entering={animacoesAtivas ? FadeIn.duration(300) : undefined}
+          source={{ uri: principal.url }}
+          style={e.imagem}
+        />
       ) : (
         <View style={[e.imagem, e.semImagem]}>
           <Text style={e.semImagemTexto}>Produto sem foto</Text>
@@ -89,12 +93,18 @@ export function DetalheProdutoScreen({ route, navigation }: Props) {
         (80ms, 140ms) cria uma ordem de leitura: nome, marca, preco. Sem ele,
         tudo aparece junto e o olho decide sozinho por onde comecar.
       */}
-      <Animated.Text entering={FadeInDown.delay(80).duration(260)} style={e.titulo}>
+      <Animated.Text
+        entering={animacoesAtivas ? FadeInDown.delay(80).duration(260) : undefined}
+        style={e.titulo}
+      >
         {data.name}
       </Animated.Text>
 
       {data.brand && (
-        <Animated.Text entering={FadeInDown.delay(110).duration(260)} style={e.marca}>
+        <Animated.Text
+          entering={animacoesAtivas ? FadeInDown.delay(110).duration(260) : undefined}
+          style={e.marca}
+        >
           {data.brand.name}
         </Animated.Text>
       )}
@@ -105,7 +115,7 @@ export function DetalheProdutoScreen({ route, navigation }: Props) {
         6). Nesse caso usamos o <PrecoAnimado />, que se anuncia ao mudar.
         Com faixa ("de X a Y") nao ha o que animar: e texto.
       */}
-      <Animated.View entering={FadeInDown.delay(140).duration(260)}>
+      <Animated.View entering={animacoesAtivas ? FadeInDown.delay(140).duration(260) : undefined}>
         {varianteUnica ? (
           <PrecoAnimado valor={varianteUnica.price} style={e.preco} />
         ) : (

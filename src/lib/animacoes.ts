@@ -26,6 +26,8 @@
  */
 import { Easing, type WithSpringConfig, type WithTimingConfig } from 'react-native-reanimated';
 
+export const ANIMACOES_ATIVADAS = true;
+
 export const DURACAO = {
   /** Microinteracao: feedback de toque. Acima de ~150ms ja parece lento. */
   rapida: 140,

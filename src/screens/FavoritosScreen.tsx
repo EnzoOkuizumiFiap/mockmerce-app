@@ -21,12 +21,14 @@ import { CardProduto } from '../components/CardProduto';
 import { EstadoCarregando } from '../components/EstadoCarregando';
 import { EstadoVazio } from '../components/EstadoVazio';
 import { useFavoritos } from '../contexts/FavoritosContext';
+import { useAnimacoes } from '../contexts/AnimacoesContext';
 import { cores } from '../lib/tema';
 import { AppStackParamList } from '../navigation/tipos';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'Favoritos'>;
 
 export function FavoritosScreen({ navigation }: Props) {
+  const { animacoesAtivas } = useAnimacoes();
   const { favoritos, carregando, alternarFavorito, ehFavorito } = useFavoritos();
 
   if (carregando) return <EstadoCarregando mensagem="Abrindo sua lista..." />;
@@ -47,6 +49,7 @@ export function FavoritosScreen({ navigation }: Props) {
     <View style={e.container}>
       <FlatList
         data={favoritos}
+        extraData={animacoesAtivas}
         keyExtractor={(item) => item.id}
         renderItem={({ item, index }) => (
           <CardProduto

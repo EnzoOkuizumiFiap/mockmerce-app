@@ -23,7 +23,8 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { DURACAO, MOLA_TOQUE } from '../lib/animacoes';
+import { DURACAO, MOLA_TOQUE, ANIMACOES_ATIVADAS } from '../lib/animacoes';
+import { useAnimacoes } from '../contexts/AnimacoesContext';
 import { cores } from '../lib/tema';
 
 type Props = {
@@ -33,6 +34,7 @@ type Props = {
 };
 
 export function BotaoFavorito({ ativo, aoPressionar, tamanho = 24 }: Props) {
+  const { animacoesAtivas } = useAnimacoes();
   const escala = useSharedValue(1);
 
   /**
@@ -45,7 +47,7 @@ export function BotaoFavorito({ ativo, aoPressionar, tamanho = 24 }: Props) {
    * E anima so ao ATIVAR. Remover dos favoritos nao merece comemoracao.
    */
   useEffect(() => {
-    if (!ativo) return;
+    if (!ativo || !ANIMACOES_ATIVADAS || !animacoesAtivas) return;
 
     /**
      * `withSequence` encadeia: cresce rapido e volta com mola. Repare que o
@@ -55,7 +57,7 @@ export function BotaoFavorito({ ativo, aoPressionar, tamanho = 24 }: Props) {
       withTiming(1.35, { duration: DURACAO.rapida }),
       withSpring(1, MOLA_TOQUE),
     );
-  }, [ativo, escala]);
+  }, [ativo, escala, animacoesAtivas]);
 
   const estiloAnimado = useAnimatedStyle(() => ({
     transform: [{ scale: escala.value }],

@@ -20,10 +20,10 @@ import { useNotificacoes } from '../contexts/NotificacoesContext';
 import { cores } from '../lib/tema';
 
 const TITULO: Record<string, string> = {
-  verificando: 'Verificando notificacoes...',
-  concedida: 'Notificacoes ligadas',
-  negada: 'Notificacoes recusadas',
-  indisponivel: 'Push indisponivel aqui',
+  verificando: 'Verificando notificações...',
+  concedida: 'Notificações ligadas',
+  negada: 'Notificações recusadas',
+  indisponivel: 'Push indisponível aqui',
 };
 
 export function CartaoNotificacoes() {
@@ -52,7 +52,12 @@ export function CartaoNotificacoes() {
       {motivo && <Text style={e.motivo}>{motivo}</Text>}
 
       {!ok && status !== 'verificando' && (
-        <Pressable style={e.botao} onPress={tentarNovamente} accessibilityRole="button">
+        <Pressable
+          style={e.botao}
+          onPress={tentarNovamente}
+          accessibilityRole="button"
+          accessibilityLabel="Tentar de novo"
+        >
           <Text style={e.textoBotao}>Tentar de novo</Text>
         </Pressable>
       )}

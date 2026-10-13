@@ -25,6 +25,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { DURACAO } from '../lib/animacoes';
+import { useAnimacoes } from '../contexts/AnimacoesContext';
 import { formatarPreco } from '../lib/formatar';
 import { cores } from '../lib/tema';
 
@@ -34,6 +35,7 @@ type Props = {
 };
 
 export function PrecoAnimado({ valor, style }: Props) {
+  const { animacoesAtivas } = useAnimacoes();
   /** 0 = normal, 1 = em destaque. O estilo interpola entre os dois. */
   const destaque = useSharedValue(0);
   const anterior = useRef(valor);
@@ -44,13 +46,13 @@ export function PrecoAnimado({ valor, style }: Props) {
     anterior.current = valor;
 
     // So a queda comemora — mesma regra do push la do backend.
-    if (!caiu) return;
+    if (!caiu || !animacoesAtivas) return;
 
     destaque.value = withSequence(
       withTiming(1, { duration: DURACAO.rapida }),
       withTiming(0, { duration: DURACAO.lenta }),
     );
-  }, [valor, destaque]);
+  }, [valor, destaque, animacoesAtivas]);
 
   /**
    * `interpolateColor` e um worklet: ele traduz 0..1 em uma cor, a cada

@@ -28,6 +28,7 @@
  * ---------------------------------------------------------------------------
  */
 import { createContext, ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 
@@ -36,6 +37,9 @@ import { navegarPara } from '../navigation/navegacao';
 import { registrarAparelho } from '../services/notificacoesService';
 import { DadosNotificacao } from '../types/notificacao';
 import { prepararCanalAndroid } from '../lib/notificacoes';
+import { definirTokenAtual, obterTokenAtual } from '../lib/pushToken';
+
+export { obterTokenAtual };
 
 /**
  * Os TRES desfechos de uma permissao — os mesmos da localizacao.
@@ -47,14 +51,6 @@ export type StatusNotificacoes =
   | 'concedida'
   | 'negada'
   | 'indisponivel';
-
-/**
- * O token fica aqui fora do React porque o logout precisa dele DEPOIS de o
- * componente ja ter desmontado o usuario. Um modulo e o lugar honesto para
- * um dado que pertence a instalacao, e nao a uma tela.
- */
-let tokenAtual: string | null = null;
-export const obterTokenAtual = (): string | null => tokenAtual;
 
 interface NotificacoesContextValor {
   status: StatusNotificacoes;
@@ -84,13 +80,12 @@ export function NotificacoesProvider({ children }: { children: ReactNode }) {
     setMotivo(null);
 
     /**
-     * Emulador/simulador sem servicos do Google nao recebe push remoto.
-     * Checar aqui evita uma excecao generica mais adiante e permite dizer ao
-     * usuario o que de fato acontece.
+     * No iOS, simulador nao recebe push remoto da Apple.
+     * No Android, emuladores com imagem Google Play conseguem receber push via FCM.
      */
-    if (!Device.isDevice) {
+    if (!Device.isDevice && Platform.OS === 'ios') {
       setStatus('indisponivel');
-      setMotivo('Push remoto precisa de aparelho fisico ou de um emulador com Google Play.');
+      setMotivo('Push remoto no iOS precisa de aparelho fisico.');
       return;
     }
 
@@ -136,11 +131,11 @@ export function NotificacoesProvider({ children }: { children: ReactNode }) {
        * no servidor.
        */
       const { data } = await Notifications.getDevicePushTokenAsync();
-      tokenAtual = data;
+      definirTokenAtual(data);
       setToken(data);
       setStatus('concedida');
     } catch (erro) {
-      tokenAtual = null;
+      definirTokenAtual(null);
       setToken(null);
       setStatus('indisponivel');
       setMotivo(
@@ -152,6 +147,7 @@ export function NotificacoesProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     preparar();
   }, [preparar]);
 
@@ -234,7 +230,14 @@ export function NotificacoesProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <NotificacoesContext.Provider value={{ status, token, motivo, tentarNovamente: preparar }}>
+    <NotificacoesContext.Provider
+      value={{
+        status,
+        token,
+        motivo,
+        tentarNovamente: preparar,
+      }}
+    >
       {children}
     </NotificacoesContext.Provider>
   );

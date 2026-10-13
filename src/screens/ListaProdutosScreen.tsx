@@ -20,6 +20,7 @@ import { EstadoCarregando } from '../components/EstadoCarregando';
 import { EstadoErro } from '../components/EstadoErro';
 import { EstadoVazio } from '../components/EstadoVazio';
 import { useFavoritos } from '../contexts/FavoritosContext';
+import { useAnimacoes } from '../contexts/AnimacoesContext';
 import { ehAppError } from '../errors/AppError';
 import { useDebounce } from '../hooks/useDebounce';
 import { useBuscaProdutos, useProdutos } from '../hooks/useProdutos';
@@ -29,6 +30,7 @@ import { AppStackParamList } from '../navigation/tipos';
 type Props = NativeStackScreenProps<AppStackParamList, 'ListaProdutos'>;
 
 export function ListaProdutosScreen({ navigation }: Props) {
+  const { animacoesAtivas } = useAnimacoes();
   const [termo, setTermo] = useState('');
 
   // O termo so chega a API 400ms depois da ultima tecla.
@@ -90,6 +92,7 @@ export function ListaProdutosScreen({ navigation }: Props) {
     return (
       <FlatList
         data={data}
+        extraData={animacoesAtivas}
         keyExtractor={(item) => item.id}
         // `isFetching` aqui, e nao `isPending`: queremos o indicador girando
         // durante a revalidacao, sem esconder a lista que ja esta na tela.

@@ -6,12 +6,10 @@
  * depois de comprar a API libera avaliar.
  * ---------------------------------------------------------------------------
  */
-import { ActivityIndicator, Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-
 import { EstadoCarregando } from '../components/EstadoCarregando';
 import { EstadoVazio } from '../components/EstadoVazio';
-import { ehAppError } from '../errors/AppError';
 import { useCarrinho, useFinalizarCompra } from '../hooks/useCompra';
 import { formatarPreco } from '../lib/formatar';
 import { cores } from '../lib/tema';

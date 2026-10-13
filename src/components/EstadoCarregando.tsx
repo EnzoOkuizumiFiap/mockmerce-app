@@ -21,11 +21,18 @@ import Animated, {
 import { useEffect } from 'react';
 
 import { cores } from '../lib/tema';
+import { useAnimacoes } from '../contexts/AnimacoesContext';
 
 export function EstadoCarregando({ mensagem = 'Carregando...' }: { mensagem?: string }) {
+  const { animacoesAtivas } = useAnimacoes();
   const opacidade = useSharedValue(1);
 
   useEffect(() => {
+    if (!animacoesAtivas) {
+      opacidade.value = 1;
+      return;
+    }
+
     /**
      * `withRepeat(animacao, -1)` repete para sempre (-1 = sem fim).
      *
@@ -49,7 +56,7 @@ export function EstadoCarregando({ mensagem = 'Carregando...' }: { mensagem?: st
       ),
       -1,
     );
-  }, [opacidade]);
+  }, [animacoesAtivas, opacidade]);
 
   const estiloAnimado = useAnimatedStyle(() => ({ opacity: opacidade.value }));
 

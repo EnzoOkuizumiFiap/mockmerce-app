@@ -16,11 +16,12 @@
  * quebra sem internet, para mostrar um nome que praticamente nunca muda.
  * ---------------------------------------------------------------------------
  */
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { Avatar } from '../components/Avatar';
+import { CartaoAnimacoes } from '../components/CartaoAnimacoes';
 import { CartaoNotificacoes } from '../components/CartaoNotificacoes';
 import { useAuth } from '../contexts/AuthContext';
 import { useFavoritos } from '../contexts/FavoritosContext';
@@ -44,7 +45,11 @@ export function PerfilScreen() {
   const quantidade = favoritos.length;
 
   return (
-    <View style={e.container}>
+    <ScrollView
+      style={e.scroll}
+      contentContainerStyle={e.container}
+      showsVerticalScrollIndicator={false}
+    >
       <Avatar nome={usuario.name} imagem={usuario.image} tamanho={96} />
 
       <Text style={e.nome}>{usuario.name}</Text>
@@ -63,12 +68,14 @@ export function PerfilScreen() {
         </Pressable>
       </View>
 
+      <CartaoAnimacoes />
+
       <CartaoNotificacoes />
 
       <Pressable style={e.botao} onPress={sair} accessibilityRole="button">
         <Text style={e.textoBotao}>Sair</Text>
       </Pressable>
-    </View>
+    </ScrollView>
   );
 }
 
@@ -79,12 +86,15 @@ const e = StyleSheet.create({
     paddingVertical: 10, paddingHorizontal: 16,
   },
   atalhoTexto: { color: cores.primaria, fontWeight: '600', fontSize: 14 },
-  container: {
+  scroll: {
     flex: 1,
+    backgroundColor: cores.superficie,
+  },
+  container: {
     alignItems: 'center',
     padding: 32,
+    paddingBottom: 48,
     gap: 8,
-    backgroundColor: cores.superficie,
   },
   nome: { fontSize: 20, fontWeight: '700', color: cores.textoForte, marginTop: 12 },
   email: { fontSize: 14, color: cores.textoFraco },
