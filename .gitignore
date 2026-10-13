@@ -2,6 +2,7 @@ node_modules/
 .expo/
 dist/
 web-build/
+android/
 .env
 *.log
 .DS_Store

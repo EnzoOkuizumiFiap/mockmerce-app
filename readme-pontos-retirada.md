@@ -4,20 +4,24 @@
 
 | Integrante | Responsabilidades Principais | Arquivos / Módulos Principais |
 | :--- | :--- | :--- |
-| **Luna Guimarães** | Pontos de retirada: lista ordenada por distância, mapa com os pontos e com a loja, aviso de "sem posição" com botão de tentar de novo, estados de carregando, erro e vazio (RF-44, RF-45 aviso, RF-46, RF-48). | `src/services/retiradaService.ts`, `src/hooks/usePontosRetirada.ts`, `src/screens/PontosRetiradaScreen.tsx`, `src/services/lojaService.ts`, `src/hooks/useLocalizacaoLoja.ts` |
+| **Luna Guimarães** | Tela de pontos de retirada (lista ordenada por distância, aviso de "sem posição" com botão de tentar de novo, estados de carregando, erro e vazio: RF-44, RF-45, RF-48) e a loja no mapa (RF-46). | `src/screens/PontosRetiradaScreen.tsx`, `src/services/lojaService.ts`, `src/hooks/useLocalizacaoLoja.ts`, `src/components/MapaPontos.tsx` (só o marcador da loja) |
+
+**Vieram da base do grupo (não são meus):** `src/hooks/usePontosRetirada.ts`, `src/hooks/useLocalizacao.ts`, `src/services/localizacaoService.ts`, `src/components/AvisoLocalizacao.tsx`, `src/components/CartaoPontoRetirada.tsx` e `src/components/SeletorEntrega.tsx` (permissão de localização, RF-43, e escolha da retirada no checkout, RF-47). A minha tela usa esses arquivos.
 
 ### Decisões técnicas
 
-1. **A consulta de pontos não espera o GPS.** O hook usa `useQuery` com `placeholderData: keepPreviousData`. Motivo: se esperasse a localização, um GPS lento ou negado deixaria a tela presa em "Obtendo localização". Assim a lista aparece na hora e, quando a posição chega, a chave do cache muda e a lista é buscada de novo, já ordenada.
-2. **Coordenadas arredondadas a 3 casas na chave do cache.** O GPS varia na 5ª casa decimal, e sem o arredondamento cada micro-movimento dispararia uma requisição nova (3 casas são cerca de 100 m).
-3. **Parâmetro `enabled` no hook.** Permite que o checkout só busque os pontos quando a pessoa escolher "Retirar na loja". O parâmetro está pronto, mas o checkout ainda não o usa (ver "O que não funciona").
-4. **Localização da loja em um hook separado.** A loja é dado de apoio: se `GET /store/settings` falhar ou não tiver coordenada, a lista e o mapa dos pontos continuam funcionando, só sem o marcador da loja.
-5. **Sem posição, a lista vem em ordem alfabética.** Sem latitude e longitude a API ordena por nome e devolve `distanceKm: null`. A tela explica isso e oferece "Tentar de novo".
+1. **Fiquei com o hook de pontos da base do grupo e descartei o meu.** O meu `usePontosRetirada` e o `retiradaService` saíram na junção. O hook do grupo já é usado pelo checkout (RF-47) e tem o parâmetro `habilitado`, que faz o mesmo que o meu `enabled`: o checkout só busca os pontos quando a pessoa escolhe "Retirar na loja". Ele também só busca depois que a localização resolve (concedida, negada ou com erro), então a primeira lista já vem ordenada, sem duas buscas seguidas. Em troca, a lista espera a localização; isso não trava a tela porque o hook de localização desiste do GPS em 10 segundos e vira "erro".
+2. **Coordenadas arredondadas a 3 casas na chave do cache.** O GPS varia na 5ª casa decimal e, sem arredondar, cada micro-movimento dispararia uma requisição nova (3 casas são cerca de 100 m). O hook do grupo faz o mesmo.
+3. **Localização da loja em um hook separado.** A loja é dado de apoio: se `GET /store/settings` falhar ou a loja não tiver coordenada, a lista e o mapa dos pontos continuam funcionando, só sem o marcador da loja.
+4. **Loja com marcador próprio no mapa.** O marcador da loja é verde (`cores.sucesso`, do tema) para não se confundir com os pontos de retirada. O mapa enquadra pontos, loja e a pessoa (se houver posição). O `MapaPontos` ganhou só uma prop opcional, `loja`.
+5. **Sem posição, a lista vem em ordem alfabética.** Sem latitude e longitude a API ordena por nome e devolve `distanceKm: null`. A tela mostra o aviso explicando isso e o selo de distância some dos cartões, mas a lista e o mapa continuam.
 
 ### Declaração de uso de IA
 
 **Luna de Carvalho Guimarães (CP5):**
 > Usei o Claude (Anthropic) para gerar os arquivos de pontos de retirada: o serviço, o hook e a tela, e depois o parâmetro `enabled` do hook, o `lojaService.ts`, o `useLocalizacaoLoja.ts` e o marcador da loja no mapa. O que eu fiz por conta própria: cadastrei os pontos de retirada e a localização da loja no painel, conferi as respostas da API (distâncias de 0,77 / 2,9 / 3,7 km) e rodei o `tsc` para checar os erros. Até agora não fiz alterações manuais no código gerado. Estou estudando os arquivos para conseguir explicar cada um na arguição.
+>
+> Na junção com a main, usei o Claude de novo. A main já tinha uma versão do hook e da tela de pontos de retirada. Ele comparou as duas, resolveu o conflito ficando com o hook da main, reescreveu a `PontosRetiradaScreen.tsx` sobre os componentes da main e levou o marcador da loja para o `MapaPontos.tsx`. Rodei o `tsc` e o `eslint` nesses arquivos e passaram. O que eu mudei depois de gerar: [PREENCHER: o que você mudou ou testou à mão nesses arquivos; se não mudou nada, escreva isso].
 
 ### Diário de erro
 
@@ -43,8 +47,6 @@
 
 ### O que não funciona (ainda)
 
-- **RF-47** (escolher retirada no checkout e enviar `pickupPointId`) não está implementado. Depende da base do app.
-- O app ainda não roda na `main`, que está em refatoração. As telas de retirada foram verificadas só pelo `tsc` e pela API no Swagger, e não foram testadas em aparelho.
-- O `tsc` ainda aponta 3 erros nos meus arquivos, todos de dependências de colegas: `useLocation`, `EstadoCarregando` e `lib/tema`.
+- Não testei em aparelho nem em emulador. Conferi só com `tsc`, `eslint` e a API no Swagger.
 - Negar a localização, o cenário principal do RF-45, ainda não foi testado em aparelho.
-- A tela do pedido ainda não mostra o ponto de retirada escolhido.
+- A escolha da retirada no checkout (RF-47) é do código do grupo; eu não testei de ponta a ponta um pedido de retirada chegando ao painel com o ponto escolhido.

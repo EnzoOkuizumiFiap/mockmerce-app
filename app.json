@@ -27,7 +27,12 @@
         "ACCESS_COARSE_LOCATION",
         "ACCESS_FINE_LOCATION",
         "READ_MEDIA_IMAGES"
-      ]
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": "COLE_A_CHAVE_DO_GOOGLE_MAPS_AQUI"
+        }
+      }
     },
     "web": {
       "bundler": "metro"
