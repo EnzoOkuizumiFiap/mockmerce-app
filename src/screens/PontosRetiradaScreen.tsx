@@ -1,43 +1,50 @@
 /**
  * ---------------------------------------------------------------------------
- * TELA: ONDE RETIRAR
+ * TELA: PONTOS DE RETIRADA (mapa)
  * ---------------------------------------------------------------------------
- * Mapa em cima, lista embaixo. Os dois mostram os mesmos pontos.
+ * Mapa em cima, lista embaixo, ordenada pela distancia de quem esta olhando.
  *
- * A TELA FUNCIONA SEM A PERMISSAO. Se a pessoa negou o GPS:
- *   - o mapa e a lista continuam aparecendo (a API ordena por nome);
- *   - o <AvisoLocalizacao /> explica e oferece "tentar de novo";
- *   - so o selo de distancia some dos cartoes.
+ * O ASSUNTO DESTA TELA NAO E O MAPA — e o que acontece quando o GPS NAO
+ * responde. Desenhar marcador e facil; o que separa um app publicavel de um
+ * exercicio e tratar os tres estados:
  *
- * Estados obtendo localizacao / carregando / erro / vazio / lista.
+ *   status 'ok'      -> lista ordenada, com "2,9 km" em cada ponto
+ *   status 'negada'  -> mesma lista, sem distancia, com um aviso discreto
+ *   status 'erro'    -> mesma lista, sem distancia, com botao de tentar de novo
  *
- * Os pontos de retirada SAO os enderecos da loja: cada marcador no mapa e um
- * lugar fisico onde a loja entrega o pedido.
- *
- * A LOJA NO MAPA (RF-46): a localizacao da loja vem de um hook separado
- * (useLocalizacaoLoja). Ela e dado de apoio: se falhar ou nao tiver coordenada,
- * `loja` fica vazia e a tela segue normal, so sem o marcador da loja.
+ * Nos tres casos A LISTA APARECE. Essa e a regra: a permissao melhora a tela,
+ * nao decide se ela existe.
  * ---------------------------------------------------------------------------
  */
-import { useState } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useMemo } from 'react';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import MapView, { Marker } from 'react-native-maps';
 
-import { AvisoLocalizacao } from '../components/AvisoLocalizacao';
-import { CartaoPontoRetirada } from '../components/CartaoPontoRetirada';
 import { EstadoCarregando } from '../components/EstadoCarregando';
 import { EstadoErro } from '../components/EstadoErro';
-import { MapaPontos } from '../components/MapaPontos';
+import { EstadoVazio } from '../components/EstadoVazio';
 import { ehAppError } from '../errors/AppError';
-import { useLocalizacaoLoja } from '../hooks/useLocalizacaoLoja';
 import { usePontosRetirada } from '../hooks/usePontosRetirada';
 import { cores } from '../lib/tema';
-import { AppStackParamList } from '../navigation/tipos';
-import { PontoRetirada } from '../types/localizacao';
+import { Coordenada, PontoRetirada } from '../types/localizacao';
 
-type Props = NativeStackScreenProps<AppStackParamList, 'PontosRetirada'>;
+/** Centro de Sao Paulo — so para o mapa nascer em algum lugar plausivel. */
+const REGIAO_PADRAO = {
+  latitude: -23.5505,
+  longitude: -46.6333,
+  latitudeDelta: 0.2,
+  longitudeDelta: 0.2,
+};
 
-export function PontosRetiradaScreen(_props: Props) {
+/** Endereco em uma linha, pulando o que a loja deixou em branco. */
+function enderecoResumido(ponto: PontoRetirada): string {
+  const { street, number, district, city } = ponto.address;
+  return [[street, number].filter(Boolean).join(', '), district, city]
+    .filter(Boolean)
+    .join(' - ');
+}
+
+export function PontosRetiradaScreen() {
   const {
     data,
     isPending,
@@ -46,70 +53,110 @@ export function PontosRetiradaScreen(_props: Props) {
     refetch,
     posicao,
     statusLocalizacao,
-    podePerguntarDeNovo,
     tentarLocalizacaoNovamente,
-    aguardandoLocalizacao,
   } = usePontosRetirada();
 
-  // Opcional: erro ou loja sem coordenada nao derrubam a tela (so some o marcador).
-  const { data: loja } = useLocalizacaoLoja();
+  const pontos = data?.data ?? [];
 
-  const [selecionadoId, setSelecionadoId] = useState<string | null>(null);
+  /**
+   * A regiao inicial do mapa.
+   *
+   * Prioridade: onde o usuario esta > o primeiro ponto da loja > Sao Paulo.
+   * `useMemo` porque `initialRegion` so e lido no primeiro render — recalcular
+   * a cada render seria trabalho jogado fora.
+   */
+  const regiaoInicial = useMemo(() => {
+    const alvo: Coordenada | undefined = posicao ?? pontos[0]?.coordinate;
+    if (!alvo) return REGIAO_PADRAO;
+    return {
+      latitude: alvo.latitude,
+      longitude: alvo.longitude,
+      // ~5 km de area visivel: perto o bastante para ver ruas, longe o
+      // bastante para caber mais de um ponto.
+      latitudeDelta: 0.05,
+      longitudeDelta: 0.05,
+    };
+  }, [posicao, pontos]);
 
-  const pontos: PontoRetirada[] = (data?.data ?? []).filter((p) => p.active);
+  if (isPending) return <EstadoCarregando mensagem="Buscando pontos de retirada..." />;
 
-  // ---- Estados ------------------------------------------------------------
-  if (aguardandoLocalizacao) return <EstadoCarregando mensagem="Obtendo sua localizacao..." />;
-
-  if (isPending && !isError) return <EstadoCarregando mensagem="Buscando pontos de retirada..." />;
-
-  // So tomamos a tela inteira quando NAO ha nada para mostrar. Com dados em
-  // cache (placeholderData), um erro de rede nao esconde a lista.
-  if (isError && !data) {
+  if (isError) {
     return (
       <EstadoErro
-        mensagem={ehAppError(error) ? error.mensagem : 'Algo inesperado aconteceu.'}
+        mensagem={ehAppError(error) ? error.mensagem : 'Nao foi possivel carregar os pontos.'}
         aoTentarNovamente={() => refetch()}
       />
     );
   }
 
+  if (pontos.length === 0) {
+    return <EstadoVazio mensagem="Esta loja ainda nao tem pontos de retirada." />;
+  }
+
   return (
     <View style={e.container}>
-      <MapaPontos
-        pontos={pontos}
-        posicao={posicao}
-        loja={loja ?? null}
-        selecionadoId={selecionadoId}
-        aoSelecionar={setSelecionadoId}
-      />
+      <MapView
+        style={e.mapa}
+        initialRegion={regiaoInicial}
+        /**
+         * Mostra o ponto azul do usuario. So funciona com permissao — sem
+         * ela o mapa simplesmente nao desenha o ponto, sem quebrar nada.
+         */
+        showsUserLocation={statusLocalizacao === 'ok'}
+      >
+        {pontos.map((ponto) => (
+          <Marker
+            key={ponto.id}
+            // A API ja devolve no formato que o Marker espera. Nada a converter.
+            coordinate={ponto.coordinate}
+            title={ponto.name}
+            description={
+              ponto.distanceKm !== null
+                ? `${ponto.distanceKm} km de voce`
+                : enderecoResumido(ponto)
+            }
+          />
+        ))}
+      </MapView>
+
+      {/* O aviso so existe quando ha algo a avisar. */}
+      {statusLocalizacao === 'negada' ? (
+        <View style={e.aviso}>
+          <Text style={e.avisoTexto}>
+            Sem acesso a sua localizacao, nao da para ordenar por proximidade.
+          </Text>
+        </View>
+      ) : null}
+
+      {statusLocalizacao === 'erro' ? (
+        <Pressable style={e.aviso} onPress={tentarLocalizacaoNovamente}>
+          <Text style={e.avisoTexto}>
+            Nao conseguimos sua localizacao. Toque para tentar de novo.
+          </Text>
+        </Pressable>
+      ) : null}
 
       <FlatList
-        style={e.lista}
-        contentContainerStyle={e.listaConteudo}
         data={pontos}
-        keyExtractor={(p) => p.id}
-        ListHeaderComponent={
-          <AvisoLocalizacao
-            status={statusLocalizacao}
-            podePerguntarDeNovo={podePerguntarDeNovo}
-            aoTentarNovamente={tentarLocalizacaoNovamente}
-          />
-        }
-        ListEmptyComponent={
-          <Text style={e.vazio}>A loja ainda nao tem pontos de retirada.</Text>
-        }
-        ListFooterComponent={
-          statusLocalizacao === 'obtendo' ? (
-            <ActivityIndicator style={e.carregandoRodape} color={cores.primaria} />
-          ) : null
-        }
+        keyExtractor={(ponto) => ponto.id}
+        contentContainerStyle={e.lista}
         renderItem={({ item }) => (
-          <CartaoPontoRetirada
-            ponto={item}
-            selecionado={item.id === selecionadoId}
-            aoPressionar={() => setSelecionadoId(item.id)}
-          />
+          <View style={e.card}>
+            <View style={e.linhaTitulo}>
+              <Text style={e.nome}>{item.name}</Text>
+
+              {/* Sem posicao, distanceKm e null — e o badge some. */}
+              {item.distanceKm !== null ? (
+                <Text style={e.distancia}>{item.distanceKm} km</Text>
+              ) : null}
+            </View>
+
+            {enderecoResumido(item) ? (
+              <Text style={e.endereco}>{enderecoResumido(item)}</Text>
+            ) : null}
+
+            {item.hours ? <Text style={e.horario}>{item.hours}</Text> : null}
+          </View>
         )}
       />
     </View>
@@ -118,8 +165,25 @@ export function PontosRetiradaScreen(_props: Props) {
 
 const e = StyleSheet.create({
   container: { flex: 1, backgroundColor: cores.fundo },
-  lista: { flex: 1 },
-  listaConteudo: { padding: 16, gap: 10 },
-  vazio: { textAlign: 'center', color: cores.textoFraco, fontSize: 14, marginTop: 24 },
-  carregandoRodape: { marginTop: 8 },
+  mapa: { height: 260, width: '100%' },
+  aviso: { backgroundColor: cores.primariaClara, padding: 10 },
+  avisoTexto: { fontSize: 12, color: cores.primariaEscura, textAlign: 'center' },
+  lista: { padding: 16, gap: 10 },
+  card: {
+    backgroundColor: cores.superficie,
+    borderRadius: 12,
+    padding: 14,
+    gap: 4,
+    borderWidth: 1,
+    borderColor: cores.borda,
+  },
+  linhaTitulo: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 8 },
+  nome: { fontSize: 15, fontWeight: '600', color: cores.textoForte, flexShrink: 1 },
+  distancia: {
+    fontSize: 12, fontWeight: '600', color: cores.primariaEscura,
+    backgroundColor: cores.primariaClara, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999,
+    overflow: 'hidden',
+  },
+  endereco: { fontSize: 13, color: cores.texto },
+  horario: { fontSize: 12, color: cores.textoFraco },
 });

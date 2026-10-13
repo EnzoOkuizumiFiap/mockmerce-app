@@ -23,6 +23,8 @@ import { apagarSeguro, guardarSeguro, lerSeguro } from '../storage/armazenamento
 import { CHAVES, CHAVES_SEGURAS } from '../storage/chavesArmazenamento';
 import { registrarAoExpirar } from '../storage/sessaoExpirada';
 import { Credenciais, NovoCliente, RespostaLogin, Usuario } from '../types/usuario';
+import { obterTokenAtual } from './NotificacoesContext';
+import { removerAparelho } from '../services/notificacoesService';
 
 type AuthContextValor = {
   usuario: Usuario | null;
@@ -171,6 +173,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   /** Logout manual. */
   async function sair() {
+    /**
+     * ANTES de apagar o token da sessao: a rota que remove o aparelho exige
+     * o cliente autenticado. Invertendo a ordem, a chamada leva 401 e o
+     * aparelho fica registrado no nome de quem saiu — e a proxima queda de
+     * preco de um produto que ELE salvou toca no celular de quem entrou
+     * depois.
+     *
+     * Falhar aqui nao pode impedir o logout: sair da conta e mais
+     * importante do que limpar o registro, e o backend desativa o token
+     * sozinho quando o Firebase disser que ele morreu.
+     */
+    const token = obterTokenAtual();
+    if (token) {
+      try {
+        await removerAparelho(token);
+      } catch {
+        // silencio proposital: ver comentario acima
+      }
+    }
+
     await limparSessao();
   }
 

@@ -1,68 +1,57 @@
+/**
+ * ---------------------------------------------------------------------------
+ * SERVICE DE NOTIFICACOES
+ * ---------------------------------------------------------------------------
+ * Duas chamadas, e as duas precisam do cliente LOGADO: o backend guarda o
+ * aparelho junto do cliente, porque e assim que ele sabe para quem mandar
+ * "o preco do produto que VOCE salvou caiu".
+ * ---------------------------------------------------------------------------
+ */
+import { Platform } from 'react-native';
+import * as Device from 'expo-device';
+import Constants from 'expo-constants';
+
 import { api } from '../api/client';
-import { DadosNotificacao, MensagemNotificacao } from '../types/notificacao';
 
-type Registro = Record<string, unknown>;
-
-function ehRegistro(valor: unknown): valor is Registro {
-  return typeof valor === 'object' && valor !== null && !Array.isArray(valor);
+export interface AparelhoRegistrado {
+  id: string;
+  platform: 'ANDROID' | 'IOS' | 'WEB';
+  deviceName: string | null;
+  tokenPreview: string;
+  active: boolean;
 }
 
-function texto(valor: unknown): string | null {
-  if (typeof valor === 'string' && valor.trim()) return valor.trim();
-  if (typeof valor === 'number') return String(valor);
-  return null;
+/**
+ * Registra este aparelho para receber push.
+ *
+ * CHAME A CADA ABERTURA DO APP, nao so uma vez no primeiro login. O token do
+ * FCM e por INSTALACAO e pode mudar sozinho: reinstalacao, limpar dados do
+ * app, restaurar backup em outro aparelho, ou rotacao decidida pelo proprio
+ * Firebase. Um app que registra so uma vez para de receber push um dia,
+ * sem ninguem mexer em nada.
+ *
+ * O backend faz upsert pelo token, entao chamar toda vez nao duplica.
+ */
+export async function registrarAparelho(token: string): Promise<AparelhoRegistrado> {
+  const resposta = await api.post<AparelhoRegistrado>('/customers/me/devices', {
+    token,
+    platform: Platform.OS === 'ios' ? 'IOS' : 'ANDROID',
+    // Serve so para voce se achar na lista do painel quando houver varios.
+    deviceName: Device.deviceName ?? Device.modelName ?? undefined,
+    appVersion: Constants.expoConfig?.version ?? undefined,
+  });
+  return resposta.data;
 }
 
-function extrairLista(resposta: unknown): unknown[] {
-  if (Array.isArray(resposta)) return resposta;
-  if (!ehRegistro(resposta)) return [];
-
-  if (Array.isArray(resposta.messages)) return resposta.messages;
-  if (Array.isArray(resposta.items)) return resposta.items;
-  if (Array.isArray(resposta.results)) return resposta.results;
-  if (Array.isArray(resposta.data)) return resposta.data;
-  if (ehRegistro(resposta.data) && Array.isArray(resposta.data.messages)) {
-    return resposta.data.messages;
-  }
-
-  return [];
-}
-
-function normalizarMensagem(valor: unknown, indice: number): MensagemNotificacao | null {
-  if (!ehRegistro(valor)) return null;
-
-  const titulo = texto(valor.title) ?? texto(valor.titulo);
-  const corpo = texto(valor.body) ?? texto(valor.corpo) ?? texto(valor.message);
-  if (!titulo || !corpo) return null;
-
-  const dataBruta = ehRegistro(valor.data) ? valor.data : {};
-  const produtoId = texto(dataBruta.produtoId) ?? texto(dataBruta.productId);
-  const createdAt = texto(valor.createdAt) ?? texto(valor.date) ?? texto(dataBruta.createdAt);
-  const idRecebido = texto(valor.id) ?? texto(valor.messageId);
-
-  // O ID do servidor é preferível. A composição abaixo é um fallback estável
-  // para respostas que não tragam ID, evitando repetir a mesma mensagem.
-  const id = idRecebido ?? `${createdAt ?? 'sem-data'}:${titulo}:${corpo}:${indice}`;
-  const data: DadosNotificacao = {};
-
-  for (const [chave, item] of Object.entries(dataBruta)) {
-    const valorTexto = texto(item);
-    if (valorTexto !== null) data[chave] = valorTexto;
-  }
-
-  if (produtoId) {
-    data.produtoId = produtoId;
-    data.rota = 'produto';
-  }
-  if (createdAt) data.createdAt = createdAt;
-
-  return { id, titulo, corpo, data, createdAt };
-}
-
-/** Busca e normaliza o histórico de mensagens da loja. */
-export async function buscarMensagens(): Promise<MensagemNotificacao[]> {
-  const resposta = await api.get<unknown>('/push/messages');
-  return extrairLista(resposta.data)
-    .map(normalizarMensagem)
-    .filter((mensagem): mensagem is MensagemNotificacao => mensagem !== null);
+/**
+ * Tira este aparelho da lista.
+ *
+ * PRECISA acontecer no logout, e ANTES de apagar o token da sessao — a rota
+ * exige o cliente autenticado. Sem isso, quem sair da conta continua
+ * recebendo notificacao dirigida ao dono anterior, o que alem de errado e
+ * vazamento: "o preco do produto que voce salvou caiu" conta o que a outra
+ * pessoa tinha salvo.
+ */
+export async function removerAparelho(token: string): Promise<void> {
+  await api.delete(`/customers/me/devices/${encodeURIComponent(token)}`);
 }
