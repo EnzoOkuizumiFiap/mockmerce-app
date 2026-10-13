@@ -2,85 +2,121 @@
  * ---------------------------------------------------------------------------
  * HOOK: LOCALIZACAO DO APARELHO
  * ---------------------------------------------------------------------------
- * Pedir a posicao do usuario tem TRES desfechos, e nao dois:
+ * Pedir a posicao tem TRES desfechos, e nao dois:
  *
- *   1. permitido  -> temos a coordenada
- *   2. negado     -> nao temos, e nao adianta insistir
- *   3. erro       -> permitido, mas o GPS nao respondeu (dentro de predio,
- *                    emulador sem posicao configurada, aparelho antigo)
+ *   ok      -> permitido e com coordenada
+ *   negada  -> o usuario recusou
+ *   erro    -> permitido, mas o GPS nao respondeu (predio, GPS desligado,
+ *              emulador sem posicao). E o caso que deixa a tela presa em
+ *              "Obtendo localizacao" quando ninguem trata.
  *
- * O caso 3 e o que quase todo mundo esquece. O app pede a permissao, o
- * usuario aceita, e a tela fica travada para sempre em "Obtendo localizacao"
- * porque `getCurrentPositionAsync` nunca voltou.
+ * `parado` = nao pedimos ainda (hook desligado). `obtendo` = pedindo agora.
+ * A tela distingue "ainda tentando" de "nao vai rolar" pelo `status`.
  *
- * Por isso este hook expoe um `status` explicito em vez de so `posicao`: a
- * tela precisa conseguir distinguir "ainda estou tentando" de "nao vai rolar".
- *
- * E a regra que vale para qualquer permissao de sistema:
- *
- *   A TELA PRECISA FUNCIONAR SEM A PERMISSAO.
- *
- * Aqui isso significa listar os pontos sem ordenar por distancia. Um app que
- * mostra tela branca quando o usuario clica "Nao permitir" esta quebrado —
- * mesmo que a culpa seja "do usuario".
+ * A TELA PRECISA FUNCIONAR SEM A PERMISSAO.
  * ---------------------------------------------------------------------------
  */
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { AppState } from 'react-native';
 import * as Location from 'expo-location';
 
 import { Coordenada } from '../types/localizacao';
 
-export type StatusLocalizacao = 'obtendo' | 'ok' | 'negada' | 'erro';
+export type StatusLocalizacao = 'parado' | 'obtendo' | 'ok' | 'negada' | 'erro';
 
-export function useLocalizacao() {
+/** Sem resposta do GPS neste prazo, desistimos: vira `erro`, nunca trava. */
+const PRAZO_GPS_MS = 10_000;
+
+function comPrazo<T>(promessa: Promise<T>, ms: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('PRAZO_GPS')), ms);
+    promessa.then(
+      (valor) => {
+        clearTimeout(timer);
+        resolve(valor);
+      },
+      (erro) => {
+        clearTimeout(timer);
+        reject(erro);
+      },
+    );
+  });
+}
+
+export function useLocalizacao(habilitada = true) {
   const [posicao, setPosicao] = useState<Coordenada | null>(null);
-  const [status, setStatus] = useState<StatusLocalizacao>('obtendo');
+  const [status, setStatus] = useState<StatusLocalizacao>('parado');
+  /** false = o sistema nao mostra mais o dialogo; so nas Configuracoes. */
+  const [podePerguntarDeNovo, setPodePerguntarDeNovo] = useState(true);
+
+  const montado = useRef(true);
+  const statusRef = useRef<StatusLocalizacao>('parado');
+  statusRef.current = status;
+
+  useEffect(() => {
+    montado.current = true;
+    return () => {
+      montado.current = false;
+    };
+  }, []);
 
   const obter = useCallback(async () => {
     setStatus('obtendo');
     try {
-      /**
-       * "Foreground" = so enquanto o app esta aberto. E o que precisamos.
-       *
-       * Existe tambem a permissao de background (posicao com o app fechado),
-       * que as lojas analisam com lupa e exige justificativa. Nao peca o que
-       * voce nao vai usar.
-       */
-      const { status: permissao } = await Location.requestForegroundPermissionsAsync();
+      // Foreground = so com o app aberto. Nao pedimos background.
+      const permissao = await Location.requestForegroundPermissionsAsync();
+      if (!montado.current) return;
+      setPodePerguntarDeNovo(permissao.canAskAgain);
 
-      if (permissao !== 'granted') {
+      if (permissao.status !== 'granted') {
+        setPosicao(null);
         setStatus('negada');
         return;
       }
 
-      const lida = await Location.getCurrentPositionAsync({
-        /**
-         * `Balanced` = ~100 m de precisao, resposta rapida, pouca bateria.
-         * Para "qual loja e a mais perto" isso basta e sobra; `High` liga o
-         * GPS de verdade e pode demorar segundos dentro de um predio.
-         */
-        accuracy: Location.Accuracy.Balanced,
-      });
+      let coords: Coordenada;
+      try {
+        // Balanced (~100 m) basta para "qual ponto e o mais perto".
+        const lida = await comPrazo(
+          Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }),
+          PRAZO_GPS_MS,
+        );
+        coords = lida.coords;
+      } catch {
+        // Plano B: ultima posicao conhecida do sistema.
+        const ultima = await Location.getLastKnownPositionAsync();
+        if (!ultima) throw new Error('SEM_POSICAO');
+        coords = ultima.coords;
+      }
 
-      setPosicao({
-        latitude: lida.coords.latitude,
-        longitude: lida.coords.longitude,
-      });
+      if (!montado.current) return;
+      setPosicao({ latitude: coords.latitude, longitude: coords.longitude });
       setStatus('ok');
     } catch {
-      // Permissao concedida mas leitura falhou (caso 3 la de cima).
+      if (!montado.current) return;
+      setPosicao(null);
       setStatus('erro');
     }
   }, []);
 
   useEffect(() => {
-    obter();
-  }, [obter]);
+    if (habilitada) obter();
+  }, [habilitada, obter]);
 
-  return {
-    posicao,
-    status,
-    /** Para um botao "tentar de novo" quando deu erro. */
-    tentarNovamente: obter,
-  };
+  /**
+   * Negou, foi as Configuracoes, liberou e voltou ao app: tentamos sozinhos.
+   * So consultamos a permissao (sem dialogo) para nao reabrir o pedido a cada
+   * volta ao primeiro plano.
+   */
+  useEffect(() => {
+    if (!habilitada) return;
+    const assinatura = AppState.addEventListener('change', async (proximo) => {
+      if (proximo !== 'active' || statusRef.current !== 'negada') return;
+      const atual = await Location.getForegroundPermissionsAsync();
+      if (atual.status === 'granted') obter();
+    });
+    return () => assinatura.remove();
+  }, [habilitada, obter]);
+
+  return { posicao, status, podePerguntarDeNovo, tentarNovamente: obter };
 }
