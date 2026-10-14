@@ -78,19 +78,19 @@ export function PontosRetiradaScreen() {
     };
   }, [posicao, pontos]);
 
-  if (isPending) return <EstadoCarregando mensagem="Buscando pontos de retirada..." />;
+  if (isPending) return <EstadoCarregando mensagem="Buscando livrarias e pontos de retirada..." />;
 
   if (isError) {
     return (
       <EstadoErro
-        mensagem={ehAppError(error) ? error.mensagem : 'Nao foi possivel carregar os pontos.'}
+        mensagem={ehAppError(error) ? error.mensagem : 'Não foi possível carregar os pontos de retirada.'}
         aoTentarNovamente={() => refetch()}
       />
     );
   }
 
   if (pontos.length === 0) {
-    return <EstadoVazio mensagem="Esta loja ainda nao tem pontos de retirada." />;
+    return <EstadoVazio mensagem="Esta livraria ainda não possui pontos de retirada parceiros." />;
   }
 
   return (
@@ -109,10 +109,10 @@ export function PontosRetiradaScreen() {
             key={ponto.id}
             // A API ja devolve no formato que o Marker espera. Nada a converter.
             coordinate={ponto.coordinate}
-            title={ponto.name}
+            title={`📖 ${ponto.name}`}
             description={
               ponto.distanceKm !== null
-                ? `${ponto.distanceKm} km de voce`
+                ? `${ponto.distanceKm} km de você`
                 : enderecoResumido(ponto)
             }
           />
@@ -123,7 +123,7 @@ export function PontosRetiradaScreen() {
       {statusLocalizacao === 'negada' ? (
         <View style={e.aviso}>
           <Text style={e.avisoTexto}>
-            Sem acesso a sua localizacao, nao da para ordenar por proximidade.
+            📍 Sem permissão de localização, os pontos de retirada aparecem em ordem alfabética.
           </Text>
         </View>
       ) : null}
@@ -131,7 +131,7 @@ export function PontosRetiradaScreen() {
       {statusLocalizacao === 'erro' ? (
         <Pressable style={e.aviso} onPress={tentarLocalizacaoNovamente}>
           <Text style={e.avisoTexto}>
-            Nao conseguimos sua localizacao. Toque para tentar de novo.
+            📍 Não conseguimos sua localização. Toque para tentar de novo.
           </Text>
         </Pressable>
       ) : null}
@@ -143,7 +143,7 @@ export function PontosRetiradaScreen() {
         renderItem={({ item }) => (
           <View style={e.card}>
             <View style={e.linhaTitulo}>
-              <Text style={e.nome}>{item.name}</Text>
+              <Text style={e.nome}>📚 {item.name}</Text>
 
               {/* Sem posicao, distanceKm e null — e o badge some. */}
               {item.distanceKm !== null ? (
@@ -155,7 +155,7 @@ export function PontosRetiradaScreen() {
               <Text style={e.endereco}>{enderecoResumido(item)}</Text>
             ) : null}
 
-            {item.hours ? <Text style={e.horario}>{item.hours}</Text> : null}
+            {item.hours ? <Text style={e.horario}>🕒 {item.hours}</Text> : null}
           </View>
         )}
       />

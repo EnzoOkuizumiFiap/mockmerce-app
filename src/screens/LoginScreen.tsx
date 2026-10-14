@@ -73,14 +73,17 @@ export function LoginScreen({ navigation }: Props) {
           contentContainerStyle={e.container}
           keyboardShouldPersistTaps="handled"
         >
-          <Text style={e.titulo}>Vitrine</Text>
-          <Text style={e.subtitulo}>Entre para continuar</Text>
+          <View style={e.marcaCabecalho}>
+            <Text style={e.iconeLogo}>📖</Text>
+            <Text style={e.titulo}>Livro Aberto</Text>
+            <Text style={e.subtitulo}>Sua livraria e sebo digital favorito</Text>
+          </View>
 
           <TextInput
             style={e.campo}
             value={email}
             onChangeText={setEmail}
-            placeholder="E-mail"
+            placeholder="Seu e-mail de leitor"
             placeholderTextColor={cores.placeholder}
             // Teclado de e-mail, sem maiuscula automatica e sem corretor:
             // os tres juntos evitam a maior parte dos "senha invalida" que na
@@ -95,7 +98,7 @@ export function LoginScreen({ navigation }: Props) {
             style={e.campo}
             value={password}
             onChangeText={setPassword}
-            placeholder="Senha"
+            placeholder="Sua senha secreta"
             placeholderTextColor={cores.placeholder}
             secureTextEntry
             autoCapitalize="none"
@@ -107,16 +110,18 @@ export function LoginScreen({ navigation }: Props) {
             style={[e.botao, !podeEnviar && e.botaoOff]}
             onPress={aoEntrar}
             disabled={!podeEnviar}
+            accessibilityRole="button"
+            accessibilityLabel="Entrar no aplicativo"
           >
-            <Text style={e.textoBotao}>{enviando ? 'Entrando...' : 'Entrar'}</Text>
+            <Text style={e.textoBotao}>{enviando ? 'Entrando no acervo...' : 'Entrar na Livraria'}</Text>
           </Pressable>
 
           {erro && <Text style={e.erro}>{erro}</Text>}
 
           <View style={e.rodape}>
-            <Text style={e.rodapeTexto}>Nao tem conta?</Text>
+            <Text style={e.rodapeTexto}>Ainda não é leitor cadastrado?</Text>
             <Pressable onPress={() => navigation.navigate('Cadastro')} hitSlop={8}>
-              <Text style={e.link}>Criar agora</Text>
+              <Text style={e.link}>Criar estante agora</Text>
             </Pressable>
           </View>
 
@@ -142,12 +147,14 @@ const e = StyleSheet.create({
   safe: { flex: 1, backgroundColor: cores.superficie },
   flex: { flex: 1 },
   container: { flexGrow: 1, padding: 24, justifyContent: 'center', gap: 10 },
+  marcaCabecalho: { alignItems: 'center', marginBottom: 20 },
+  iconeLogo: { fontSize: 44, marginBottom: 8 },
   titulo: { fontSize: 32, fontWeight: '800', color: cores.primaria, textAlign: 'center' },
   subtitulo: {
-    fontSize: 15,
+    fontSize: 14,
     color: cores.textoFraco,
     textAlign: 'center',
-    marginBottom: 20,
+    marginTop: 4,
   },
   campo: {
     borderWidth: 1,

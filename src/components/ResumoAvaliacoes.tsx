@@ -19,7 +19,7 @@ export function ResumoAvaliacoes({ resumo }: { resumo: ResumoNotas }) {
   if (resumo.count === 0) {
     return (
       <View style={e.vazio}>
-        <Text style={e.textoVazio}>Este produto ainda nao tem avaliacoes.</Text>
+        <Text style={e.textoVazio}>Esta obra ainda não possui resenhas de leitores.</Text>
       </View>
     );
   }
@@ -30,7 +30,7 @@ export function ResumoAvaliacoes({ resumo }: { resumo: ResumoNotas }) {
         <Text style={e.media}>{resumo.average.toFixed(1)}</Text>
         <Estrelas nota={resumo.average} tamanho={14} />
         <Text style={e.total}>
-          {resumo.count} {resumo.count === 1 ? 'avaliacao' : 'avaliacoes'}
+          {resumo.count} {resumo.count === 1 ? 'leitor avaliou' : 'leitores avaliaram'}
         </Text>
       </View>
 

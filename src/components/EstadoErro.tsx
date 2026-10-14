@@ -16,7 +16,12 @@ export function EstadoErro({ mensagem, aoTentarNovamente }: Props) {
     <View style={e.container}>
       <Text style={e.mensagem}>{mensagem}</Text>
       {aoTentarNovamente && (
-        <Pressable style={e.botao} onPress={aoTentarNovamente}>
+        <Pressable
+          style={e.botao}
+          onPress={aoTentarNovamente}
+          accessibilityRole="button"
+          accessibilityLabel="Tentar novamente"
+        >
           <Text style={e.textoBotao}>Tentar novamente</Text>
         </Pressable>
       )}

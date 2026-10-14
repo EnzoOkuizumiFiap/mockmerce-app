@@ -21,6 +21,9 @@ function formatarData(iso: string): string {
 }
 
 export function CardAvaliacao({ avaliacao }: { avaliacao: Avaliacao }) {
+  // RF-42: Avaliação ocultada pela loja no painel não aparece no app (a menos que seja o próprio autor)
+  if (avaliacao.hidden && !avaliacao.isMine) return null;
+
   return (
     <View style={e.card}>
       <View style={e.cabecalho}>
@@ -34,10 +37,10 @@ export function CardAvaliacao({ avaliacao }: { avaliacao: Avaliacao }) {
 
         {/* O selo so faz sentido porque a API garante a compra — nao e enfeite. */}
         {avaliacao.verifiedPurchase ? (
-          <Text style={e.verificada}>Compra verificada</Text>
+          <Text style={e.verificada}>📖 Leitor verificado</Text>
         ) : null}
 
-        {avaliacao.isMine ? <Text style={e.minha}>Sua avaliacao</Text> : null}
+        {avaliacao.isMine ? <Text style={e.minha}>Sua resenha</Text> : null}
       </View>
 
       {avaliacao.comment ? <Text style={e.comentario}>{avaliacao.comment}</Text> : null}
@@ -52,7 +55,7 @@ export function CardAvaliacao({ avaliacao }: { avaliacao: Avaliacao }) {
 
       {/* So aparece para o dono: a loja ocultou a avaliacao dele. */}
       {avaliacao.hidden ? (
-        <Text style={e.oculta}>Esta avaliacao foi ocultada pela loja.</Text>
+        <Text style={e.oculta}>Esta resenha foi moderada pela livraria.</Text>
       ) : null}
     </View>
   );

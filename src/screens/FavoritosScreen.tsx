@@ -14,7 +14,7 @@
  * ---------------------------------------------------------------------------
  */
 
-import { FlatList, StyleSheet, View } from 'react-native';
+import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { CardProduto } from '../components/CardProduto';
@@ -31,7 +31,7 @@ export function FavoritosScreen({ navigation }: Props) {
   const { animacoesAtivas } = useAnimacoes();
   const { favoritos, carregando, alternarFavorito, ehFavorito } = useFavoritos();
 
-  if (carregando) return <EstadoCarregando mensagem="Abrindo sua lista..." />;
+  if (carregando) return <EstadoCarregando mensagem="Abrindo sua estante de livros..." />;
 
   /**
    * Repare que NAO existe estado de erro aqui.
@@ -42,7 +42,11 @@ export function FavoritosScreen({ navigation }: Props) {
    * teatro.
    */
   if (favoritos.length === 0) {
-    return <EstadoVazio mensagem="Voce ainda nao salvou nenhum produto." />;
+    return (
+      <EstadoVazio
+        mensagem="Sua estante ainda está vazia.\nToque na estrela de qualquer livro para guardá-lo aqui!"
+      />
+    );
   }
 
   return (
@@ -51,6 +55,14 @@ export function FavoritosScreen({ navigation }: Props) {
         data={favoritos}
         extraData={animacoesAtivas}
         keyExtractor={(item) => item.id}
+        ListHeaderComponent={
+          <View style={e.cabecalho}>
+            <Text style={e.cabecalhoTitulo}>📚 Minha Estante de Leitura</Text>
+            <Text style={e.cabecalhoSubtitulo}>
+              {favoritos.length} {favoritos.length === 1 ? 'livro guardado' : 'livros guardados'} para acompanhar
+            </Text>
+          </View>
+        }
         renderItem={({ item, index }) => (
           <CardProduto
             indice={index}
@@ -70,5 +82,24 @@ export function FavoritosScreen({ navigation }: Props) {
 
 const e = StyleSheet.create({
   container: { flex: 1, backgroundColor: cores.fundo },
-  lista: { padding: 16 },
+  lista: { padding: 16, paddingTop: 10 },
+  cabecalho: {
+    backgroundColor: cores.primariaClara,
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(37, 99, 235, 0.2)',
+  },
+  cabecalhoTitulo: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: cores.primariaEscura,
+  },
+  cabecalhoSubtitulo: {
+    fontSize: 12,
+    color: cores.textoForte,
+    marginTop: 2,
+    opacity: 0.8,
+  },
 });

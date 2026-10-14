@@ -16,7 +16,7 @@
  * e um erro no upload nao joga fora o texto que ela digitou.
  * ---------------------------------------------------------------------------
  */
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -32,8 +32,14 @@ import * as ImagePicker from 'expo-image-picker';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { SeletorEstrelas } from '../components/Estrelas';
+import { useAuth } from '../contexts/AuthContext';
 import { ehAppError } from '../errors/AppError';
-import { useCriarAvaliacao } from '../hooks/useAvaliacoes';
+import {
+  useAvaliacoes,
+  useCriarAvaliacao,
+  useEditarAvaliacao,
+  usePodeAvaliar,
+} from '../hooks/useAvaliacoes';
 import { cores } from '../lib/tema';
 import { AppStackParamList } from '../navigation/tipos';
 import { arquivoDaUri, enviarImagem } from '../services/uploadService';
@@ -46,15 +52,67 @@ const MAX_FOTOS = 5;
 type FotoPronta = { mediaId: string; url: string };
 
 export function AvaliarScreen({ route, navigation }: Props) {
-  const { produtoId, produtoNome } = route.params;
+  const { produtoId, produtoNome, avaliacaoInicial } = route.params;
+  const { usuario } = useAuth();
 
-  const [nota, setNota] = useState(0);
-  const [titulo, setTitulo] = useState('');
-  const [comentario, setComentario] = useState('');
-  const [fotos, setFotos] = useState<FotoPronta[]>([]);
+  const { data: avaliacoesData } = useAvaliacoes(produtoId);
+  const { data: permissao } = usePodeAvaliar(produtoId);
+
+  // Busca a avaliação do próprio leitor caso não tenha vindo em route.params
+  const avaliacaoExistente = useMemo(() => {
+    if (avaliacaoInicial) return avaliacaoInicial;
+    if (!avaliacoesData?.data) return null;
+    return (
+      avaliacoesData.data.find(
+        (a) =>
+          (permissao?.reviewId && a.id === permissao.reviewId) ||
+          (usuario?.id && a.author?.id === usuario.id) ||
+          a.isMine,
+      ) ?? null
+    );
+  }, [avaliacaoInicial, avaliacoesData, permissao, usuario]);
+
+  const [nota, setNota] = useState(avaliacaoInicial?.rating ?? 0);
+  const [titulo, setTitulo] = useState(avaliacaoInicial?.title ?? '');
+  const [comentario, setComentario] = useState(avaliacaoInicial?.comment ?? '');
+  const [fotos, setFotos] = useState<FotoPronta[]>(
+    avaliacaoInicial?.images.map((img) => ({
+      mediaId: img.mediaId ?? img.id,
+      url: img.url,
+    })) ?? [],
+  );
   const [enviandoFoto, setEnviandoFoto] = useState(false);
 
+  // Identificador da avaliação existente para edição
+  const reviewIdParaEditar = avaliacaoInicial?.id ?? avaliacaoExistente?.id ?? permissao?.reviewId;
+  const ehEdicao = Boolean(reviewIdParaEditar || permissao?.reason === 'ALREADY_REVIEWED');
+
+  // Se a avaliação inicial não veio via rota mas foi resolvida via query, ajusta os campos
+  const [prevIdCarregado, setPrevIdCarregado] = useState<string | null>(
+    avaliacaoInicial?.id ?? null,
+  );
+
+  if (
+    avaliacaoExistente &&
+    avaliacaoExistente.id !== prevIdCarregado &&
+    nota === 0 &&
+    !comentario
+  ) {
+    setPrevIdCarregado(avaliacaoExistente.id);
+    setNota(avaliacaoExistente.rating);
+    setTitulo(avaliacaoExistente.title ?? '');
+    setComentario(avaliacaoExistente.comment ?? '');
+    setFotos(
+      avaliacaoExistente.images.map((img) => ({
+        mediaId: img.mediaId ?? img.id,
+        url: img.url,
+      })),
+    );
+  }
+
   const criar = useCriarAvaliacao(produtoId);
+  const editar = useEditarAvaliacao(produtoId);
+  const isEnviando = criar.isPending || editar.isPending;
 
   /**
    * Escolher + enviar a foto.
@@ -122,61 +180,78 @@ export function AvaliarScreen({ route, navigation }: Props) {
       return;
     }
 
-    criar.mutate(
-      {
-        rating: nota,
-        title: titulo.trim() || null,
-        comment: comentario.trim(),
-        mediaIds: fotos.map((f) => f.mediaId),
-      },
-      {
+    const payload = {
+      rating: nota,
+      title: titulo.trim() || null,
+      comment: comentario.trim(),
+      mediaIds: fotos.map((f) => f.mediaId),
+    };
+
+    if (ehEdicao && reviewIdParaEditar) {
+      editar.mutate(
+        {
+          avaliacaoId: reviewIdParaEditar,
+          dados: payload,
+        },
+        {
+          onSuccess: () => navigation.goBack(),
+          onError: (erro) => {
+            Alert.alert(
+              'Não foi possível atualizar a avaliação',
+              ehAppError(erro) ? erro.mensagem : 'Tente novamente.',
+            );
+          },
+        },
+      );
+    } else {
+      criar.mutate(payload, {
         onSuccess: () => navigation.goBack(),
         onError: (erro) => {
-          /**
-           * Os dois erros de negocio desta tela:
-           *   403 nao comprou   409 ja avaliou
-           * A mensagem vem pronta da API (o interceptor traduz), entao aqui
-           * so exibimos — nao reescrevemos o texto.
-           */
           Alert.alert(
-            'Nao foi possivel avaliar',
+            'Não foi possível avaliar',
             ehAppError(erro) ? erro.mensagem : 'Tente novamente.',
           );
         },
-      },
-    );
+      });
+    }
   }
 
   return (
     <ScrollView style={e.container} contentContainerStyle={e.conteudo}>
-      <Text style={e.produto}>{produtoNome}</Text>
+      {ehEdicao && (
+        <View style={e.badgeModoEdicao}>
+          <Text style={e.textoModoEdicao}>✏️ Editando sua avaliação registrada</Text>
+        </View>
+      )}
 
-      <Text style={e.rotulo}>Sua nota</Text>
+      <Text style={e.produto}>📖 {produtoNome}</Text>
+
+      <Text style={e.rotulo}>Sua nota para o livro</Text>
       <SeletorEstrelas nota={nota} aoEscolher={setNota} />
 
-      <Text style={e.rotulo}>Titulo (opcional)</Text>
+      <Text style={e.rotulo}>Título da resenha (opcional)</Text>
       <TextInput
         style={e.campo}
         value={titulo}
         onChangeText={setTitulo}
-        placeholder="Resuma em poucas palavras"
+        placeholder="Resuma sua impressão sobre a leitura"
         placeholderTextColor={cores.placeholder}
         maxLength={120}
       />
 
-      <Text style={e.rotulo}>Comentario</Text>
+      <Text style={e.rotulo}>Sua opinião sobre a leitura</Text>
       <TextInput
         style={[e.campo, e.campoGrande]}
         value={comentario}
         onChangeText={setComentario}
-        placeholder="O que voce achou do produto?"
+        placeholder="Conte o que achou da história, escrita, personagens ou edição..."
         placeholderTextColor={cores.placeholder}
         multiline
         maxLength={2000}
       />
 
       <Text style={e.rotulo}>
-        Fotos ({fotos.length}/{MAX_FOTOS})
+        Fotos do seu exemplar ({fotos.length}/{MAX_FOTOS})
       </Text>
       <View style={e.fotos}>
         {fotos.map((foto) => (
@@ -200,14 +275,18 @@ export function AvaliarScreen({ route, navigation }: Props) {
       </View>
 
       <Pressable
-        style={[e.botao, (criar.isPending || nota === 0) && e.botaoDesativado]}
+        style={[e.botao, (isEnviando || nota === 0) && e.botaoDesativado]}
         onPress={enviar}
-        disabled={criar.isPending || nota === 0}
+        disabled={isEnviando || nota === 0}
+        accessibilityRole="button"
+        accessibilityLabel="Publicar avaliação"
       >
-        {criar.isPending ? (
+        {isEnviando ? (
           <ActivityIndicator color="#FFF" />
         ) : (
-          <Text style={e.botaoTexto}>Enviar avaliacao</Text>
+          <Text style={e.botaoTexto}>
+            {ehEdicao ? 'Salvar alterações da avaliação' : 'Publicar avaliação literária'}
+          </Text>
         )}
       </Pressable>
     </ScrollView>
@@ -217,6 +296,21 @@ export function AvaliarScreen({ route, navigation }: Props) {
 const e = StyleSheet.create({
   container: { flex: 1, backgroundColor: cores.fundo },
   conteudo: { padding: 16, gap: 8, paddingBottom: 40 },
+  badgeModoEdicao: {
+    backgroundColor: '#EFF6FF',
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+    marginBottom: 4,
+  },
+  textoModoEdicao: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: cores.primaria,
+  },
   produto: { fontSize: 18, fontWeight: '700', color: cores.textoForte, marginBottom: 4 },
   rotulo: { fontSize: 13, fontWeight: '600', color: cores.texto, marginTop: 12 },
   campo: {

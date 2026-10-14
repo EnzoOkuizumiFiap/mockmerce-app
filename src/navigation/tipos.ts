@@ -15,6 +15,8 @@
  * ---------------------------------------------------------------------------
  */
 
+import { Avaliacao } from '../types/avaliacao';
+
 /** Telas de quem NAO esta logado. */
 export type AuthStackParamList = {
   Login: undefined;
@@ -47,7 +49,7 @@ export type AppStackParamList = {
    * O `produtoNome` viaja junto pelo mesmo motivo do detalhe: o cabecalho ja
    * mostra de que produto e a avaliacao, sem esperar requisicao nenhuma.
    */
-  Avaliar: { produtoId: string; produtoNome: string };
+  Avaliar: { produtoId: string; produtoNome: string; avaliacaoInicial?: Avaliacao | null };
 
   PontosRetirada: undefined;
 };

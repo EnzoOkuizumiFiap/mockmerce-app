@@ -121,7 +121,7 @@ Para avaliação do corretor, utilize o usuário de teste já registrado na noss
 ### Relatos Individuais sobre o Uso de IA
 
 **Enzo Okuizumi:**
-  > Usei o Gemini 3.7 flash para comentar/entender todo o código! Agora, eu entendi de fato todo o código? Sim e Nãokkkkkkkkk, ainda preciso melhorar minhas habilidades no REACT e no JS... E também fiquei com preguiça pra ler tudo (Se passou de 3 linhas eu não leioKKKKKKKKK). Bom, quando minhas habilidades estiverem melhores, eu vou ler tudo e entender de fato... Ou não também, provável que eu já tenha esquecido desse projeto. Hm, recomendo ler as obras que cadastramos aí! 
+  > Bom, usei a IA mais pra refatorar algumas partes do código e me ajudar a conectar com o Firebase (Por incrível que pareça foi a parte fácil), com o Maps (ESSA MERDA NÃO FUNCIONAVA!! Tive que ATIVAR O MAPS NAS CONFIGS DO GOOGLE CLOUD PRA LIBERAR ESSA PUTARIA) e também alguns ajustes no código (Só alguns poucos erros de lint e tals)... No mais é isso, espero que goste das capas dos livros que adicionei aí kk (São ótimas obraskk)
 
 **Gustavo Keiji Okada:**
   > No máximo verifiquei uma ou outra dúvida por meio da IA. Porém o código em si, foi mais baseado em materiais passados e aulas passadas. O bug inclusive que foi resolvido foi algo que foi um erro bem besta na realidade. Ainda preciso melhorar bastante meu conhecimento de REACT em si.
@@ -197,17 +197,25 @@ Todas as durações, curvas e molas estão centralizadas no arquivo único `src/
 * `MOLA_SUAVE`: Mola amortecida para acomodação de layouts.
 
 ### 2. Animações Mantidas e Critérios
-* **Resposta ao Toque com Mola (`<Pressionavel />` - RF-49):** Botões e cards utilizam `useSharedValue` e `useAnimatedStyle` na UI thread, encolhendo suavemente para `0.96` ao tocar. Evita cliques duplicados em compras.
-* **Confirmação sem Navegação (`<BotaoFavorito />` - RF-50):** Favoritar não navega nem abre alerta. O botão dá um pulo elástico (`withSequence` crescendo para 1.35 e voltando com mola) apenas ao ativar, confirmando visualmente a gravação do favorito.
-* **Entrada Escalonada com Teto (`<CardProduto />` - RF-51):** Os itens entram com `FadeInDown` escalonados a cada 40ms, com teto rigoroso de 300ms (`ATRASO_MAXIMO`). Isso impede que produtos no fim da lista demorem para aparecer.
-* **Saída e Acomodação em Listas (`<CardProduto />` - RF-52):** Ao desfavoritar um livro na tela de Favoritos, o card sai deslizando para a direita com `FadeOutRight`, enquanto os cards restantes sobem suavemente com `LinearTransition.springify()`.
-* **Sinal de Vida no Carregamento (`<EstadoCarregando />` - RF-53):** Além do `ActivityIndicator` nativo, o texto pulsa opacidade continuamente entre 0.35 e 1.0 a cada 700ms, assegurando que o app não congelou.
+* **Resposta ao Toque com Mola (`<Pressionavel />` - RF-49):** Botões e cards utilizam `useSharedValue` e `useAnimatedStyle` na UI thread, encolhendo suavemente para `0.96` ao tocar com mola física (`MOLA_TOQUE`). Isso confere resposta tátil instantânea e evita toques múltiplos acidentais.
+* **Confirmação sem Navegação (`<BotaoFavorito />` - RF-50):** Salvar um livro na estante não navega nem abre alertas intrusivos. O botão executa um pulo elástico (`withSequence` com escala `1.35` e retorno com mola) apenas no momento da adição, confirmando a persistência com clareza.
+* **Entrada Escalonada com Teto (`<CardProduto />` - RF-51):** Os itens entram com `FadeInDown` escalonados a cada 40ms, com teto estrito de 300ms (`ATRASO_MAXIMO`). Isso cria uma sensação harmoniosa de cascata sem fazer o usuário esperar cards distantes da lista.
+* **Saída e Acomodação em Listas (`<CardProduto />` - RF-52):** Ao remover um livro da estante, o card sai deslizando para a direita com `FadeOutRight` (200ms), enquanto os cards restantes se reorganizam suavemente com `LinearTransition.springify()`.
+* **Sinal de Vida no Carregamento (`<EstadoCarregando />` - RF-53):** Além do `ActivityIndicator` nativo acessível, o texto informativo pulsa sua opacidade suavemente entre `0.35` e `1.0` a cada 700ms (`withRepeat` infinito), assegurando ao usuário que o processo está vivo.
 
-### 3. Acessibilidade e Constante de Desligamento (RF-54 e RF-55)
+### 3. Animações Cortadas (Evitadas) e o Critério
+Em respeito à boa engenharia e à usabilidade do leitor, diversas animações foram deliberadamente cortadas:
+* **Transições de Telas com Giros/Zoom 3D:** Cortadas. Transições espalhafatosas adicionam latência artificial entre telas e causam enjoo visual. Mantivemos as transições nativas do React Navigation.
+* **Deslocamento na Imagem de Capa do Detalhe:** Cortado. A capa é o elemento focal principal da tela; aplicar `SlideIn` ou deslocamento vertical em elementos grandes atrai atenção excessiva desnecessária. Optou-se por um `FadeIn` simples e discreto de 300ms.
+* **Escalonamento Infinito em FlatLists:** Cortado. Sem o teto de 300ms (`ATRASO_MAXIMO`), um card na 30ª posição demoraria mais de 1,2 segundo para surgir na tela durante a rolagem rápida.
+* **Animação ao Desfavoritar:** Cortada. A remoção de um item não é um evento comemorativo; o pulo de escala só ocorre ao favoritar.
+* **Spinners e Animações Pesadas de JS Thread:** Cortados em favor de worklets na UI thread (Reanimated 4) e componentes nativos, garantindo 60/120 FPS constantes mesmo sob carga de rede.
+
+### 4. Acessibilidade e Constante de Desligamento (RF-54 e RF-55)
 * **Constante Global de Código (RF-55):** Definimos a constante `export const ANIMACOES_ATIVADAS = true` em `src/lib/animacoes.ts` para conformidade estrita com o critério de avaliação de código.
-* **Controle em Tempo de Execução no Perfil (Linha 240 do Checklist):** Adicionamos um controle dedicado no perfil (`<CartaoAnimacoes />`) com botão e Switch para ligar/desligar todas as animações dinamicamente no app, facilitando a gravação do vídeo de demonstração sem exigir alteração de código ou rebuild.
+* **Controle em Tempo de Execução no Perfil (Linha 240 do Checklist):** Adicionamos um controle elegante no perfil (`<CartaoAnimacoes />`) com um Switch para ligar/desligar todas as animações dinamicamente no app, facilitando a demonstração sem exigir alteração de código ou rebuild.
 * **Reduzir Movimento do Sistema (RF-54):** O aplicativo escuta `AccessibilityInfo.isReduceMotionEnabled()` e o evento `reduceMotionChanged`. Quando o usuário ativa a opção no sistema operacional, o movimento é desativado automaticamente.
-* **Comportamento sem Animações (Feedback Preservado):** Quando as animações estão desligadas (seja pela constante, pelo perfil ou pela acessibilidade do SO):
+* **Comportamento sem Animações (Feedback Preservado):** Quando as animações estão desligadas (seja pela constante, pelo switch ou pela acessibilidade do SO):
   * `<Pressionavel />` substitui a mola de encolhimento por uma sutil redução de opacidade (`0.75`) enquanto pressionado, garantindo que nada fique sem feedback tátil.
   * `<BotaoFavorito />` alterna o preenchimento da estrela imediatamente, sem o salto elástico.
   * `<CardProduto />` renderiza sem atraso escalonado e sem transição de mola.
@@ -216,7 +224,21 @@ Todas as durações, curvas e molas estão centralizadas no arquivo único `src/
 
 ---
 
-## 📍 13. Localização e Pontos de Retirada (RF-43 a RF-48)
+## 🎨 13. Identidade Própria: Livro Aberto (RF-61)
+
+O aplicativo foi completamente estilizado para homenagear a proposta definida no Checkpoint 1: **uma livraria e sebo digital acolhedor e moderno**.
+
+* **Eliminação de Termos Genéricos:** Todas as ocorrências de nomes de modelo de referência (como "Vitrine", "Produtos genéricos", "comprar produto") foram eliminadas e adaptadas para a semântica literária:
+  * Vitrine ➔ **📖 Livro Aberto** (acervo literário).
+  * Carrinho ➔ **Sacola de Livros**.
+  * Favoritos ➔ **Minha Estante de Leitura**.
+  * Avaliação ➔ **Resenhas de Leitores** (com notas, opinião e fotos do exemplar).
+* **Design de Capas e Livros:** Os cartões utilizam proporção real de capas de livros (`2:3`), sombra elegante de lombada, fallback de `📖 Sem capa` e identificação destacada de editoras e autores.
+* **Design Tokens Literários (`tema.ts`):** Paleta centrada em Azul Royal (`#2563EB`), Azul Noite Profundo (`#1E3A8A`), Papel Suave (`#EFF6FF` e `#F8FAFC`) e Dourado Âmbar (`#F59E0B`).
+
+---
+
+## 📍 14. Localização e Pontos de Retirada (RF-43 a RF-48)
 
 * **Três Desfechos Tratados (RF-43):** Concedida (calcula distâncias), Negada (lista alfabética sem distância) e Concedida sem Posição/Erro (alerta discreto com botão de tentar novamente).
 * **Ordenação e Distância (RF-44 e RF-45):** Com o GPS ativo, a rota `GET /pickup-points?latitude=...&longitude=...` retorna os pontos ordenados por proximidade com o badge de quilometragem (`1.58 km de você`).
@@ -225,11 +247,38 @@ Todas as durações, curvas e molas estão centralizadas no arquivo único `src/
 
 ---
 
-## ⭐ 14. Avaliações com Foto e Validação Prévia (RF-35 a RF-42)
+## ⭐ 15. Avaliações com Foto e Validação Prévia (RF-35 a RF-42)
 
 * **Média do Produto sem Requisição Extra (RF-35):** Exibida diretamente a partir do objeto `rating` do produto (`GET /products/:id`), sem baixar a lista inteira de avaliações.
 * **Consulta Prévia com `can-review` (RF-37):** Antes de abrir o formulário, o app consulta `GET /products/:id/reviews/can-review`. Clientes que não compraram o produto ou que já avaliaram recebem a explicação contextual e amigável da regra de negócio.
 * **Upload Multipart com Boundary Dinâmico (RF-39):** O upload da imagem para `POST /uploads` nunca fixa o cabeçalho `Content-Type: multipart/form-data` na mão, permitindo que a camada de rede do React Native gere o boundary correto.
 * **Degradação de Permissão de Fotos (RF-40):** Caso a permissão da galeria seja recusada, a avaliação pode ser enviada normalmente apenas com nota e texto.
 * **Invalidação Cirúrgica de Cache (RF-41):** Após enviar a avaliação, a mutation invalida tanto a lista de avaliações quanto o cache do produto, atualizando a média de estrelas imediatamente na tela.
+
+---
+
+## 📸 16. Demonstração Visual das Telas e Fluxos
+
+Abaixo estão as capturas de tela registrando a jornada completa do leitor e a conformidade com todos os requisitos do Checkpoint 5:
+
+### 📖 1. Acervo & Detalhe Literário
+| 1. Acervo Principal & Busca | 2. Detalhe da Obra & Edição | 3. Resenhas dos Leitores |
+| :---: | :---: | :---: |
+| <img src="doc/1.%20tela%20principal.png" width="240" alt="1. Tela Principal" /> | <img src="doc/2.%20tela%20do%20livro.png" width="240" alt="2. Detalhe da Obra" /> | <img src="doc/3.%20tela%20do%20livro%20e%20avalia%C3%A7%C3%B5es.png" width="240" alt="3. Avaliações dos Leitores" /> |
+
+### 🛍️ 2. Sacola, Checkout & Pontos de Retirada
+| 4. Sacola de Livros | 5. Opções de Entrega / Retirada | 6. Escolha do Ponto no Checkout |
+| :---: | :---: | :---: |
+| <img src="doc/4.%20tela%20da%20sacola.png" width="240" alt="4. Sacola de Livros" /> | <img src="doc/5.%20tela%20da%20retirada.png" width="240" alt="5. Opções de Retirada" /> | <img src="doc/6.%20tela%20de%20finalizar%20pedido%20e%20retirar.png" width="240" alt="6. Ponto de Retirada no Checkout" /> |
+
+### 💳 3. Pagamento, Confirmação & Avaliação Literária
+| 7. Pagamento do Pedido | 8. Confirmação & Rastreio | 9. Publicar Avaliação com Fotos | 10. Resenha Publicada na Obra |
+| :---: | :---: | :---: | :---: |
+| <img src="doc/7.%20tela%20pagamento.png" width="220" alt="7. Pagamento" /> | <img src="doc/8.%20tela%20pagamento%20sucesso.png" width="220" alt="8. Confirmação" /> | <img src="doc/9.%20tela%20avalia%C3%A7%C3%A3o%20livro.png" width="220" alt="9. Formulário de Avaliação" /> | <img src="doc/10.%20tela%20livro%20mostrando%20avalia%C3%A7%C3%A3o%20inclu%C3%ADda.png" width="220" alt="10. Avaliação Incluída" /> |
+
+### 🗺️ 4. Geolocalização, Estante & Preferências do Sistema
+| 11. Mapa de Retirada (Google Maps) | 12. Meu Perfil do Leitor | 13. Minha Estante (Favoritos Offline) | 14. Diagnóstico de Notificações |
+| :---: | :---: | :---: | :---: |
+| <img src="doc/11.%20tela%20Pontos%20de%20Retirada.png" width="220" alt="11. Pontos de Retirada no Mapa" /> | <img src="doc/12.%20tela%20Perfil.png" width="220" alt="12. Tela de Perfil" /> | <img src="doc/13.%20tela%20Minha%20estante%20Favoritos.png" width="220" alt="13. Estante de Livros Salvos" /> | <img src="doc/14.%20Desativando%20notifica%C3%A7%C3%A3o%20Perfil.png" width="220" alt="14. Ajustes e Notificações" /> |
+
 

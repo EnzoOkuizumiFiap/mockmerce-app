@@ -43,11 +43,26 @@ export function Avatar({ nome, imagem, tamanho = 96 }: Props) {
 }
 
 const e = StyleSheet.create({
-  foto: { backgroundColor: cores.neutroClaro },
+  foto: {
+    backgroundColor: cores.neutroClaro,
+    borderWidth: 3,
+    borderColor: '#FFFFFF',
+  },
   iniciais: {
-    backgroundColor: cores.primariaClara,
+    backgroundColor: '#1E3A8A',
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 4,
+    borderColor: '#EFF6FF',
+    elevation: 5,
+    shadowColor: '#1E3A8A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.22,
+    shadowRadius: 8,
   },
-  texto: { color: cores.primariaEscura, fontWeight: '800' },
+  texto: {
+    color: '#FFFFFF',
+    fontWeight: '800',
+    letterSpacing: 0.8,
+  },
 });

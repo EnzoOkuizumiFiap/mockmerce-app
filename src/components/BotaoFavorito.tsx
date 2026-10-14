@@ -73,7 +73,7 @@ export function BotaoFavorito({ ativo, aoPressionar, tamanho = 24 }: Props) {
        */
       hitSlop={12}
       accessibilityRole="button"
-      accessibilityLabel={ativo ? 'Remover dos salvos' : 'Salvar produto'}
+      accessibilityLabel={ativo ? 'Remover livro da estante' : 'Guardar livro na estante'}
       style={e.area}
     >
       <Animated.Text style={[e.estrela, { fontSize: tamanho }, ativo && e.ativa, estiloAnimado]}>

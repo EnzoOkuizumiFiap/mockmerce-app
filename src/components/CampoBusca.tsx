@@ -14,11 +14,12 @@ type Props = {
 export function CampoBusca({ valor, aoMudar }: Props) {
   return (
     <View style={e.container}>
+      <Text style={e.iconeLupa}>🔍</Text>
       <TextInput
         style={e.campo}
         value={valor}
         onChangeText={aoMudar}
-        placeholder="Buscar produtos..."
+        placeholder="Buscar livro, autor ou editora..."
         placeholderTextColor={cores.placeholder}
         autoCapitalize="none"
         autoCorrect={false}
@@ -47,14 +48,23 @@ const e = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: cores.superficie,
-    borderRadius: 10,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: cores.borda,
     paddingHorizontal: 12,
     marginHorizontal: 16,
     marginTop: 12,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
+    elevation: 1,
   },
-  campo: { flex: 1, paddingVertical: 10, fontSize: 15, color: cores.textoForte },
+  iconeLupa: {
+    fontSize: 16,
+    marginRight: 8,
+  },
+  campo: { flex: 1, paddingVertical: 10, fontSize: 14, color: cores.textoForte },
   limpar: { padding: 4 },
   limparTexto: { fontSize: 22, color: cores.placeholder, lineHeight: 24 },
 });

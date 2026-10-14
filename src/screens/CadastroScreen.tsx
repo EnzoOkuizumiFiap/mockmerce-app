@@ -111,14 +111,17 @@ export function CadastroScreen({ navigation }: Props) {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ScrollView contentContainerStyle={e.container} keyboardShouldPersistTaps="handled">
-          <Text style={e.titulo}>Criar conta</Text>
-          <Text style={e.subtitulo}>E rapido: nome, e-mail e senha</Text>
+          <View style={e.marcaCabecalho}>
+            <Text style={e.iconeLogo}>📚</Text>
+            <Text style={e.titulo}>Criar Estante</Text>
+            <Text style={e.subtitulo}>Cadastre-se para comprar, favoritar e resenhar livros</Text>
+          </View>
 
           <TextInput
             style={e.campo}
             value={nome}
             onChangeText={setNome}
-            placeholder="Seu nome"
+            placeholder="Seu nome ou apelido de leitor"
             placeholderTextColor={cores.placeholder}
             // `words` porque nome proprio comeca com maiuscula — o contrario
             // do e-mail, logo abaixo.
@@ -131,7 +134,7 @@ export function CadastroScreen({ navigation }: Props) {
             style={e.campo}
             value={email}
             onChangeText={setEmail}
-            placeholder="E-mail"
+            placeholder="Seu melhor e-mail"
             placeholderTextColor={cores.placeholder}
             keyboardType="email-address"
             autoCapitalize="none"
@@ -144,7 +147,7 @@ export function CadastroScreen({ navigation }: Props) {
             style={e.campo}
             value={senha}
             onChangeText={setSenha}
-            placeholder={`Senha (minimo ${MIN_SENHA} caracteres)`}
+            placeholder={`Senha (mínimo ${MIN_SENHA} caracteres)`}
             placeholderTextColor={cores.placeholder}
             secureTextEntry
             autoCapitalize="none"
@@ -158,7 +161,7 @@ export function CadastroScreen({ navigation }: Props) {
             style={e.campo}
             value={confirmacao}
             onChangeText={setConfirmacao}
-            placeholder="Repita a senha"
+            placeholder="Repita sua senha"
             placeholderTextColor={cores.placeholder}
             secureTextEntry
             autoCapitalize="none"
@@ -170,16 +173,18 @@ export function CadastroScreen({ navigation }: Props) {
             style={[e.botao, !podeEnviar && e.botaoOff]}
             onPress={aoCadastrar}
             disabled={!podeEnviar}
+            accessibilityRole="button"
+            accessibilityLabel="Criar estante no Livro Aberto"
           >
-            <Text style={e.textoBotao}>{enviando ? 'Criando conta...' : 'Criar conta'}</Text>
+            <Text style={e.textoBotao}>{enviando ? 'Criando sua estante...' : 'Cadastrar no Livro Aberto'}</Text>
           </Pressable>
 
           {erro && <Text style={e.erro}>{erro}</Text>}
 
           <View style={e.rodape}>
-            <Text style={e.rodapeTexto}>Ja tem conta?</Text>
+            <Text style={e.rodapeTexto}>Já tem uma estante criada?</Text>
             <Pressable onPress={() => navigation.goBack()} hitSlop={8}>
-              <Text style={e.link}>Entrar</Text>
+              <Text style={e.link}>Entrar na conta</Text>
             </Pressable>
           </View>
         </ScrollView>
@@ -192,8 +197,15 @@ const e = StyleSheet.create({
   safe: { flex: 1, backgroundColor: cores.superficie },
   flex: { flex: 1 },
   container: { flexGrow: 1, padding: 24, justifyContent: 'center', gap: 10 },
+  marcaCabecalho: { alignItems: 'center', marginBottom: 20 },
+  iconeLogo: { fontSize: 44, marginBottom: 8 },
   titulo: { fontSize: 32, fontWeight: '800', color: cores.primaria, textAlign: 'center' },
-  subtitulo: { fontSize: 15, color: cores.textoFraco, textAlign: 'center', marginBottom: 20 },
+  subtitulo: {
+    fontSize: 14,
+    color: cores.textoFraco,
+    textAlign: 'center',
+    marginTop: 4,
+  },
   campo: {
     borderWidth: 1,
     borderColor: cores.neutro,

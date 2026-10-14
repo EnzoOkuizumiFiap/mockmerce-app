@@ -66,36 +66,42 @@ export function CardProduto({ produto, aoPressionar, ehFavorito, aoFavoritar, in
       layout={animacoesAtivas ? LinearTransition.springify().damping(18) : undefined}
     >
       <Pressionavel style={e.card} onPress={() => aoPressionar(produto.id)}>
-      {/* `image` pode ser null: produto cadastrado sem foto. Um <Image> com
-          uri undefined renderiza um quadrado quebrado — melhor desenhar o
-          espaco vazio de proposito. */}
-      {produto.image ? (
-        <Image source={{ uri: produto.image }} style={e.imagem} />
-      ) : (
-        <View style={[e.imagem, e.semImagem]}>
-          <Text style={e.semImagemTexto}>sem{'\n'}foto</Text>
+        {/* Capa do livro com proporção vertical (2:3) */}
+        {produto.image ? (
+          <Image source={{ uri: produto.image }} style={e.capa} resizeMode="cover" />
+        ) : (
+          <View style={[e.capa, e.semCapa]}>
+            <Text style={e.semCapaIcone}>📖</Text>
+            <Text style={e.semCapaTexto}>Sem capa</Text>
+          </View>
+        )}
+
+        <View style={e.info}>
+          <Text style={e.titulo} numberOfLines={2}>
+            {produto.name}
+          </Text>
+
+          {produto.brand && (
+            <Text style={e.editora} numberOfLines={1}>
+              📚 {produto.brand}
+            </Text>
+          )}
+
+          <Text style={e.preco}>
+            {formatarFaixaDePreco(produto.priceFrom, produto.priceTo)}
+          </Text>
+
+          {produto.stock === 0 ? (
+            <Text style={e.esgotado}>• Esgotado no momento</Text>
+          ) : produto.stock !== undefined && produto.stock <= 3 ? (
+            <Text style={e.poucoEstoque}>• Apenas {produto.stock} exemplares restantes</Text>
+          ) : null}
         </View>
-      )}
 
-      <View style={e.info}>
-        <Text style={e.titulo} numberOfLines={2}>
-          {produto.name}
-        </Text>
-
-        {produto.brand && <Text style={e.marca}>{produto.brand}</Text>}
-
-        <Text style={e.preco}>
-          {formatarFaixaDePreco(produto.priceFrom, produto.priceTo)}
-        </Text>
-
-        {produto.stock === 0 && <Text style={e.semEstoque}>Sem estoque</Text>}
-      </View>
-
-      {/* A estrela so aparece se a tela passar a funcao. A listagem passa;
-          a tela de favoritos tambem. Mesmo componente nos dois lugares. */}
-      {aoFavoritar && (
-        <BotaoFavorito ativo={ehFavorito ?? false} aoPressionar={() => aoFavoritar(produto)} />
-      )}
+        {/* Favoritar na estante */}
+        {aoFavoritar && (
+          <BotaoFavorito ativo={ehFavorito ?? false} aoPressionar={() => aoFavoritar(produto)} />
+        )}
       </Pressionavel>
     </Animated.View>
   );
@@ -105,20 +111,69 @@ const e = StyleSheet.create({
   card: {
     flexDirection: 'row',
     backgroundColor: cores.superficie,
-    borderRadius: 12,
+    borderRadius: 14,
     padding: 12,
     marginBottom: 12,
     gap: 12,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: cores.borda,
+    elevation: 2,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
   },
-  imagem: { width: 64, height: 64, borderRadius: 8, backgroundColor: cores.neutroClaro },
-  semImagem: { alignItems: 'center', justifyContent: 'center' },
-  semImagemTexto: { fontSize: 10, color: cores.placeholder, textAlign: 'center' },
-  info: { flex: 1, gap: 2 },
-  titulo: { fontSize: 15, fontWeight: '600', color: cores.textoForte },
-  marca: { fontSize: 12, color: cores.textoFraco },
-  preco: { fontSize: 15, fontWeight: '700', color: cores.primaria, marginTop: 2 },
-  semEstoque: { fontSize: 12, color: cores.perigo, fontWeight: '600' },
+  capa: {
+    width: 84,
+    height: 122,
+    borderRadius: 8,
+    backgroundColor: cores.papelAzul,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.06)',
+  },
+  semCapa: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: cores.papelAzul,
+  },
+  semCapaIcone: {
+    fontSize: 22,
+    marginBottom: 2,
+  },
+  semCapaTexto: {
+    fontSize: 9,
+    fontWeight: '600',
+    color: cores.placeholder,
+    textAlign: 'center',
+    textTransform: 'uppercase',
+  },
+  info: { flex: 1, gap: 3 },
+  titulo: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: cores.textoForte,
+    lineHeight: 20,
+  },
+  editora: {
+    fontSize: 12,
+    color: cores.textoFraco,
+    fontWeight: '500',
+  },
+  preco: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: cores.primaria,
+    marginTop: 2,
+  },
+  esgotado: {
+    fontSize: 11,
+    color: cores.perigo,
+    fontWeight: '600',
+  },
+  poucoEstoque: {
+    fontSize: 11,
+    color: cores.destaque,
+    fontWeight: '600',
+  },
 });

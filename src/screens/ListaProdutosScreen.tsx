@@ -11,11 +11,12 @@
  */
 
 import { useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { CampoBusca } from '../components/CampoBusca';
 import { CardProduto } from '../components/CardProduto';
+import { Pressionavel } from '../components/Pressionavel';
 import { EstadoCarregando } from '../components/EstadoCarregando';
 import { EstadoErro } from '../components/EstadoErro';
 import { EstadoVazio } from '../components/EstadoVazio';
@@ -58,7 +59,7 @@ export function ListaProdutosScreen({ navigation }: Props) {
     // a cada revalidacao em segundo plano.
     if (isPending) {
       return (
-        <EstadoCarregando mensagem={buscando ? 'Buscando...' : 'Carregando produtos...'} />
+        <EstadoCarregando mensagem={buscando ? 'Buscando obras no acervo...' : 'Explorando o acervo de livros...'} />
       );
     }
 
@@ -69,7 +70,7 @@ export function ListaProdutosScreen({ navigation }: Props) {
     if (isError) {
       return (
         <EstadoErro
-          mensagem={ehAppError(error) ? error.mensagem : 'Algo inesperado aconteceu.'}
+          mensagem={ehAppError(error) ? error.mensagem : 'Não foi possível carregar os livros do acervo.'}
           aoTentarNovamente={() => refetch()}
         />
       );
@@ -81,8 +82,8 @@ export function ListaProdutosScreen({ navigation }: Props) {
         <EstadoVazio
           mensagem={
             buscando
-              ? `Nenhum produto encontrado para "${termoAtrasado}".`
-              : 'Esta loja ainda nao tem produtos publicados.'
+              ? `Nenhum livro encontrado para "${termoAtrasado}".`
+              : 'Nenhum exemplar cadastrado no acervo no momento.'
           }
         />
       );
@@ -121,12 +122,39 @@ export function ListaProdutosScreen({ navigation }: Props) {
     <View style={e.container}>
       <CampoBusca valor={termo} aoMudar={setTermo} />
 
-      {/* O atalho para os salvos some durante a busca, para nao competir
-          com o resultado. */}
+      {/* Atalhos principais e destacados da Livraria */}
       {!buscando && (
-        <Pressable style={e.atalho} onPress={() => navigation.navigate('Favoritos')}>
-          <Text style={e.atalhoTexto}>{'★  Meus salvos'}</Text>
-        </Pressable>
+        <View style={e.atalhosLinha}>
+          <Pressionavel
+            style={e.cardAtalho}
+            onPress={() => navigation.navigate('Favoritos')}
+            accessibilityRole="button"
+            accessibilityLabel="Ir para Minha Estante"
+          >
+            <Text style={e.cardAtalhoIcone}>📚</Text>
+            <Text style={e.cardAtalhoTexto}>Minha Estante</Text>
+          </Pressionavel>
+
+          <Pressionavel
+            style={e.cardAtalho}
+            onPress={() => navigation.navigate('Carrinho')}
+            accessibilityRole="button"
+            accessibilityLabel="Ir para Sacola"
+          >
+            <Text style={e.cardAtalhoIcone}>🛒</Text>
+            <Text style={e.cardAtalhoTexto}>Sacola</Text>
+          </Pressionavel>
+
+          <Pressionavel
+            style={e.cardAtalho}
+            onPress={() => navigation.navigate('PontosRetirada')}
+            accessibilityRole="button"
+            accessibilityLabel="Onde retirar livros"
+          >
+            <Text style={e.cardAtalhoIcone}>📍</Text>
+            <Text style={e.cardAtalhoTexto}>Retirada</Text>
+          </Pressionavel>
+        </View>
       )}
 
       {conteudo()}
@@ -136,13 +164,39 @@ export function ListaProdutosScreen({ navigation }: Props) {
 
 const e = StyleSheet.create({
   container: { flex: 1, backgroundColor: cores.fundo },
-  lista: { padding: 16, paddingTop: 12 },
-  atalho: {
+  lista: { padding: 16, paddingTop: 10 },
+  atalhosLinha: {
+    flexDirection: 'row',
+    gap: 10,
     marginHorizontal: 16,
     marginTop: 12,
-    padding: 12,
-    backgroundColor: cores.primariaClara,
-    borderRadius: 10,
+    marginBottom: 6,
   },
-  atalhoTexto: { color: cores.primariaEscura, fontWeight: '700', fontSize: 15 },
+  cardAtalho: {
+    flex: 1,
+    backgroundColor: cores.superficie,
+    paddingVertical: 14,
+    paddingHorizontal: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: cores.borda,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    elevation: 2,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 5,
+  },
+  cardAtalhoIcone: {
+    fontSize: 22,
+    marginBottom: 2,
+  },
+  cardAtalhoTexto: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: cores.primaria,
+    textAlign: 'center',
+  },
 });

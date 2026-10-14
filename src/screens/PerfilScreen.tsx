@@ -16,13 +16,14 @@
  * quebra sem internet, para mostrar um nome que praticamente nunca muda.
  * ---------------------------------------------------------------------------
  */
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { Avatar } from '../components/Avatar';
 import { CartaoAnimacoes } from '../components/CartaoAnimacoes';
 import { CartaoNotificacoes } from '../components/CartaoNotificacoes';
+import { Pressionavel } from '../components/Pressionavel';
 import { useAuth } from '../contexts/AuthContext';
 import { useFavoritos } from '../contexts/FavoritosContext';
 import { cores } from '../lib/tema';
@@ -30,16 +31,9 @@ import { AppStackParamList } from '../navigation/tipos';
 
 export function PerfilScreen() {
   const { usuario, sair } = useAuth();
-  // `useNavigation` porque esta tela nao recebe props de navegacao (ela e
-  // aberta pelo botao do cabecalho, nao por uma rota tipada com params).
   const navigation = useNavigation<NativeStackNavigationProp<AppStackParamList>>();
   const { favoritos } = useFavoritos();
 
-  /**
-   * Se o logout acontecer enquanto esta tela esta montada, `usuario` vira
-   * null por um instante antes de o RootNavigator trocar o stack. Sem este
-   * guard, o render quebraria nesse frame.
-   */
   if (!usuario) return null;
 
   const quantidade = favoritos.length;
@@ -50,62 +44,289 @@ export function PerfilScreen() {
       contentContainerStyle={e.container}
       showsVerticalScrollIndicator={false}
     >
-      <Avatar nome={usuario.name} imagem={usuario.image} tamanho={96} />
+      {/* Hero Card do Leitor */}
+      <View style={e.heroCard}>
+        <View style={e.avatarContainer}>
+          <Avatar nome={usuario.name} imagem={usuario.image} tamanho={88} />
+        </View>
 
-      <Text style={e.nome}>{usuario.name}</Text>
-      <Text style={e.email}>{usuario.email}</Text>
+        <Text style={e.nome}>{usuario.name}</Text>
+        <Text style={e.email}>{usuario.email}</Text>
 
-      <Text style={e.contagem}>
-        {quantidade === 1 ? '1 item salvo' : `${quantidade} itens salvos`}
-      </Text>
+        <View style={e.badgeLeitor}>
+          <Text style={e.badgeLeitorTexto}>📖 Leitor Cadastrado · Livro Aberto</Text>
+        </View>
 
-      <View style={e.atalhos}>
-        <Pressable style={e.atalho} onPress={() => navigation.navigate('Carrinho')}>
-          <Text style={e.atalhoTexto}>Carrinho</Text>
-        </Pressable>
-        <Pressable style={e.atalho} onPress={() => navigation.navigate('PontosRetirada')}>
-          <Text style={e.atalhoTexto}>Onde retirar</Text>
-        </Pressable>
+        {/* Faixa de Estatísticas Rápidas */}
+        <View style={e.faixaEstatisticas}>
+          <View style={e.itemEstatistica}>
+            <Text style={e.valorEstatistica}>{quantidade}</Text>
+            <Text style={e.rotuloEstatistica}>Na Estante</Text>
+          </View>
+          <View style={e.divisorEstatistica} />
+          <View style={e.itemEstatistica}>
+            <Text style={e.valorEstatistica}>Ativa</Text>
+            <Text style={e.rotuloEstatistica}>Sacola</Text>
+          </View>
+          <View style={e.divisorEstatistica} />
+          <View style={e.itemEstatistica}>
+            <Text style={e.valorEstatistica}>3+</Text>
+            <Text style={e.rotuloEstatistica}>Livrarias</Text>
+          </View>
+        </View>
       </View>
 
-      <CartaoAnimacoes />
+      {/* Seção 1: Atalhos Principais (Os 3 cartões vibrantes com mola) */}
+      <View style={e.secao}>
+        <Text style={e.secaoTitulo}>MINHA JORNADA LITERÁRIA</Text>
 
-      <CartaoNotificacoes />
+        <Pressionavel
+          style={e.cardAtalho}
+          onPress={() =>
+            navigation.reset({
+              index: 1,
+              routes: [{ name: 'ListaProdutos' }, { name: 'Favoritos' }],
+            })
+          }
+          accessibilityRole="button"
+          accessibilityLabel="Abrir minha estante de livros salvos"
+        >
+          <View style={[e.iconeCard, { backgroundColor: '#EFF6FF' }]}>
+            <Text style={e.iconeTexto}>📚</Text>
+          </View>
+          <View style={e.infoCard}>
+            <Text style={e.tituloCard}>Minha Estante</Text>
+            <Text style={e.subtituloCard}>
+              {quantidade === 1 ? '1 livro guardado na estante' : `${quantidade} livros guardados na estante`}
+            </Text>
+          </View>
+          <View style={e.setaContainer}>
+            <Text style={e.setaTexto}>›</Text>
+          </View>
+        </Pressionavel>
 
-      <Pressable style={e.botao} onPress={sair} accessibilityRole="button">
-        <Text style={e.textoBotao}>Sair</Text>
-      </Pressable>
+        <Pressionavel
+          style={e.cardAtalho}
+          onPress={() =>
+            navigation.reset({
+              index: 1,
+              routes: [{ name: 'ListaProdutos' }, { name: 'Carrinho' }],
+            })
+          }
+          accessibilityRole="button"
+          accessibilityLabel="Abrir sacola de livros"
+        >
+          <View style={[e.iconeCard, { backgroundColor: '#FEF3C7' }]}>
+            <Text style={e.iconeTexto}>🛍️</Text>
+          </View>
+          <View style={e.infoCard}>
+            <Text style={e.tituloCard}>Sacola de Livros</Text>
+            <Text style={e.subtituloCard}>Seus exemplares selecionados</Text>
+          </View>
+          <View style={e.setaContainer}>
+            <Text style={e.setaTexto}>›</Text>
+          </View>
+        </Pressionavel>
+
+        <Pressionavel
+          style={e.cardAtalho}
+          onPress={() =>
+            navigation.reset({
+              index: 1,
+              routes: [{ name: 'ListaProdutos' }, { name: 'PontosRetirada' }],
+            })
+          }
+          accessibilityRole="button"
+          accessibilityLabel="Abrir pontos de retirada e livrarias"
+        >
+          <View style={[e.iconeCard, { backgroundColor: '#D1FAE5' }]}>
+            <Text style={e.iconeTexto}>📍</Text>
+          </View>
+          <View style={e.infoCard}>
+            <Text style={e.tituloCard}>Onde Retirar</Text>
+            <Text style={e.subtituloCard}>Pontos & livrarias parceiras no mapa</Text>
+          </View>
+          <View style={e.setaContainer}>
+            <Text style={e.setaTexto}>›</Text>
+          </View>
+        </Pressionavel>
+      </View>
+
+      {/* Seção 2: Preferências & Sistema */}
+      <View style={e.secao}>
+        <Text style={e.secaoTitulo}>PREFERÊNCIAS & AJUSTES</Text>
+        <CartaoAnimacoes />
+        <CartaoNotificacoes />
+      </View>
+
+      {/* Botão Sair da Conta */}
+      <Pressionavel
+        style={e.botaoSair}
+        onPress={sair}
+        accessibilityRole="button"
+        accessibilityLabel="Encerrar sessão e sair da conta"
+      >
+        <Text style={e.textoBotaoSair}>🚪 Sair da conta</Text>
+      </Pressionavel>
     </ScrollView>
   );
 }
 
 const e = StyleSheet.create({
-  atalhos: { flexDirection: 'row', gap: 8, marginTop: 16 },
-  atalho: {
-    borderWidth: 1.5, borderColor: cores.primaria, borderRadius: 8,
-    paddingVertical: 10, paddingHorizontal: 16,
-  },
-  atalhoTexto: { color: cores.primaria, fontWeight: '600', fontSize: 14 },
   scroll: {
     flex: 1,
-    backgroundColor: cores.superficie,
+    backgroundColor: '#F1F5F9',
   },
   container: {
-    alignItems: 'center',
-    padding: 32,
+    padding: 16,
     paddingBottom: 48,
-    gap: 8,
+    gap: 20,
   },
-  nome: { fontSize: 20, fontWeight: '700', color: cores.textoForte, marginTop: 12 },
-  email: { fontSize: 14, color: cores.textoFraco },
-  contagem: { fontSize: 14, color: cores.primaria, fontWeight: '600', marginTop: 8 },
-  botao: {
-    marginTop: 32,
-    borderWidth: 1.5,
-    borderColor: cores.perigo,
-    paddingVertical: 12,
-    paddingHorizontal: 40,
-    borderRadius: 8,
+  heroCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 24,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    elevation: 3,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
   },
-  textoBotao: { color: cores.perigo, fontWeight: '700', fontSize: 15 },
+  avatarContainer: {
+    marginBottom: 12,
+  },
+  nome: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#0F172A',
+    letterSpacing: -0.3,
+  },
+  email: {
+    fontSize: 14,
+    color: cores.textoFraco,
+    marginTop: 2,
+  },
+  badgeLeitor: {
+    backgroundColor: '#EFF6FF',
+    borderWidth: 1,
+    borderColor: '#DBEAFE',
+    paddingHorizontal: 14,
+    paddingVertical: 5,
+    borderRadius: 20,
+    marginTop: 10,
+  },
+  badgeLeitorTexto: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: cores.primaria,
+  },
+  faixaEstatisticas: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    width: '100%',
+    marginTop: 20,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+  },
+  itemEstatistica: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  valorEstatistica: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  rotuloEstatistica: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: cores.textoFraco,
+    marginTop: 2,
+  },
+  divisorEstatistica: {
+    width: 1,
+    height: 28,
+    backgroundColor: '#E2E8F0',
+  },
+  secao: {
+    gap: 10,
+  },
+  secaoTitulo: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#64748B',
+    letterSpacing: 0.8,
+    marginLeft: 4,
+  },
+  cardAtalho: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    elevation: 2,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+  },
+  iconeCard: {
+    width: 46,
+    height: 46,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  iconeTexto: {
+    fontSize: 22,
+  },
+  infoCard: {
+    flex: 1,
+    gap: 2,
+  },
+  tituloCard: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  subtituloCard: {
+    fontSize: 13,
+    color: cores.textoFraco,
+  },
+  setaContainer: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: '#F8FAFC',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  setaTexto: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#94A3B8',
+    marginTop: -2,
+  },
+  botaoSair: {
+    backgroundColor: '#FEE2E2',
+    borderWidth: 1,
+    borderColor: '#FECACA',
+    borderRadius: 16,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  textoBotaoSair: {
+    color: '#DC2626',
+    fontWeight: '700',
+    fontSize: 15,
+  },
 });

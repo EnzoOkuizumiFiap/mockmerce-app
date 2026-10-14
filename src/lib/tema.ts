@@ -1,32 +1,37 @@
 /**
- * Paleta em um lugar so.
+ * ---------------------------------------------------------------------------
+ * PALETA OFICIAL: LIVRO ABERTO (Livraria & Sebo Digital)
+ * ---------------------------------------------------------------------------
+ * Identidade visual própria definida para o Checkpoint 5 (RF-61).
  *
- * Nao e um design system — e o minimo para que trocar a cor da marca seja uma
- * edicao, e nao uma cacada por `#7C3AED` em doze arquivos.
- *
- * E, para o Checkpoint: mudar estas cores NAO transforma este app no app do
- * grupo. O que se reproduz aqui sao as decisoes de engenharia; a identidade
- * visual e o produto sao decisoes de voces.
+ * Cores inspiradas em literatura, editoras e papelaria nobre:
+ *   - Azul Royal Literário (#2563EB) como marca primária
+ *   - Azul Marinho Profundo (#1E3A8A) para cabeçalhos e autoridade
+ *   - Dourado Âmbar (#F59E0B) para estrelas, fitas e avaliações
+ *   - Tons de papel e ardósia para leitura limpa e confortável
+ * ---------------------------------------------------------------------------
  */
 export const cores = {
-  primaria: '#7C3AED',
-  primariaEscura: '#6D28D9',
-  primariaClara: '#EDE9FE',
-  primariaDesativada: '#C4B5FD',
+  primaria: '#2563EB',
+  primariaEscura: '#1E3A8A',
+  primariaClara: '#EFF6FF',
+  primariaDesativada: '#93C5FD',
 
-  fundo: '#F9FAFB',
+  fundo: '#F8FAFC',
   superficie: '#FFFFFF',
-  borda: '#E5E7EB',
+  borda: '#E2E8F0',
 
-  texto: '#374151',
-  textoForte: '#111827',
-  textoFraco: '#6B7280',
-  placeholder: '#9CA3AF',
+  texto: '#334155',
+  textoForte: '#0F172A',
+  textoFraco: '#64748B',
+  placeholder: '#94A3B8',
 
   destaque: '#F59E0B',
-  /// Usado quando algo melhora para o cliente (preco que caiu, pedido pago).
   sucesso: '#059669',
   perigo: '#EF4444',
-  neutro: '#D1D5DB',
-  neutroClaro: '#F3F4F6',
+  neutro: '#CBD5E1',
+  neutroClaro: '#F1F5F9',
+  capaPapel: '#E2E8F0',
+  papelAzul: '#EFF6FF',
+  dourado: '#D97706',
 } as const;

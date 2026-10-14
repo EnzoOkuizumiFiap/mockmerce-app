@@ -22,11 +22,9 @@
  */
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Pressable, Text } from 'react-native';
-
+import { CabecalhoSuspenso } from '../components/CabecalhoSuspenso';
 import { EstadoCarregando } from '../components/EstadoCarregando';
 import { useAuth } from '../contexts/AuthContext';
-import { cores } from '../lib/tema';
 import { DetalheProdutoScreen } from '../screens/DetalheProdutoScreen';
 import { FavoritosScreen } from '../screens/FavoritosScreen';
 import { ListaProdutosScreen } from '../screens/ListaProdutosScreen';
@@ -73,26 +71,14 @@ export function RootNavigator() {
      */
     <NavigationContainer ref={navegacaoRef} onReady={consumirNavegacaoPendente}>
       <AppStack.Navigator
-        screenOptions={({ navigation }) => ({
-          headerStyle: { backgroundColor: cores.primaria },
-          headerTintColor: '#FFFFFF',
-          headerTitleStyle: { fontWeight: '700' },
-          headerRight: () => (
-            <Pressable
-              onPress={() => navigation.navigate('Perfil')}
-              hitSlop={12}
-              accessibilityRole="button"
-              accessibilityLabel="Abrir perfil"
-            >
-              <Text style={{ color: '#FFFFFF', fontSize: 20 }}>{'☰'}</Text>
-            </Pressable>
-          ),
-        })}
+        screenOptions={{
+          header: (props) => <CabecalhoSuspenso {...props} />,
+        }}
       >
         <AppStack.Screen
           name="ListaProdutos"
           component={ListaProdutosScreen}
-          options={{ title: 'Vitrine' }}
+          options={{ title: '📖 Livro Aberto' }}
         />
         <AppStack.Screen
           name="DetalheProduto"
@@ -104,25 +90,25 @@ export function RootNavigator() {
         <AppStack.Screen
           name="Favoritos"
           component={FavoritosScreen}
-          options={{ title: 'Meus salvos' }}
+          options={{ title: 'Minha Estante' }}
         />
-        <AppStack.Screen name="Perfil" component={PerfilScreen} options={{ title: 'Perfil' }} />
+        <AppStack.Screen name="Perfil" component={PerfilScreen} options={{ title: 'Meu Perfil' }} />
 
-        {/* ---- Compra (ja vinha pronto) ---- */}
-        <AppStack.Screen name="Carrinho" component={CarrinhoScreen} options={{ title: 'Carrinho' }} />
-        <AppStack.Screen name="Checkout" component={CheckoutScreen} options={{ title: 'Finalizar' }} />
-        <AppStack.Screen name="Pedido" component={PedidoScreen} options={{ title: 'Pedido' }} />
+        {/* ---- Compra de Livros ---- */}
+        <AppStack.Screen name="Carrinho" component={CarrinhoScreen} options={{ title: 'Sacola de Livros' }} />
+        <AppStack.Screen name="Checkout" component={CheckoutScreen} options={{ title: 'Finalizar Pedido' }} />
+        <AppStack.Screen name="Pedido" component={PedidoScreen} options={{ title: 'Confirmação do Pedido' }} />
 
-        {/* ---- Conteudo desta aula ---- */}
+        {/* ---- Conteudo da livraria ---- */}
         <AppStack.Screen
           name="Avaliar"
           component={AvaliarScreen}
-          options={{ title: 'Avaliar produto' }}
+          options={{ title: 'Avaliar Leitura' }}
         />
         <AppStack.Screen
           name="PontosRetirada"
           component={PontosRetiradaScreen}
-          options={{ title: 'Onde retirar' }}
+          options={{ title: 'Onde Retirar Livros' }}
         />
       </AppStack.Navigator>
     </NavigationContainer>
